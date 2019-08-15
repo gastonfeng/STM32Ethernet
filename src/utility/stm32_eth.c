@@ -46,7 +46,7 @@
 #include "lwip/dhcp.h"
 #include "lwip/prot/dhcp.h"
 #include "lwip/dns.h"
-
+#include "core_debug.h"
 #ifdef __cplusplus
  extern "C" {
 #endif
@@ -66,10 +66,10 @@
  * Note: This is planned to extend Timer API's of the Arduino STM32 core
  *       They could be used for this library when available
  */
-#ifndef DEFAULT_ETHERNET_TIMER
-#define DEFAULT_ETHERNET_TIMER  TIM14
-#warning "Default timer used to call ethernet scheduler at regular interval: TIM14"
-#endif
+// #ifndef DEFAULT_ETHERNET_TIMER
+// #define DEFAULT_ETHERNET_TIMER  TIM14
+// #warning "Default timer used to call ethernet scheduler at regular interval: TIM14"
+// #endif
 
 /* Ethernet configuration: user parameters */
 struct stm32_eth_config {
@@ -154,16 +154,16 @@ static void scheduler_callback(stimer_t *htim)
 * @param  None
 * @retval None
 */
-static void TIM_scheduler_Config(void)
-{
-  /* Set TIMx instance. */
-  TimHandle.timer = DEFAULT_ETHERNET_TIMER;
+// static void TIM_scheduler_Config(void)
+// {
+//   /* Set TIMx instance. */
+//   TimHandle.timer = DEFAULT_ETHERNET_TIMER;
 
-  /* Timer set to 1ms */
-  TimerHandleInit(&TimHandle, (uint16_t)(1000 - 1), ((uint32_t)(getTimerClkFreq(DEFAULT_ETHERNET_TIMER) / (1000000)) - 1));
+//   /* Timer set to 1ms */
+//   TimerHandleInit(&TimHandle, (uint16_t)(1000 - 1), ((uint32_t)(getTimerClkFreq(DEFAULT_ETHERNET_TIMER) / (1000000)) - 1));
 
-  attachIntHandle(&TimHandle, scheduler_callback);
-}
+//   attachIntHandle(&TimHandle, scheduler_callback);
+// }
 
 void stm32_eth_init(const uint8_t *mac, const uint8_t *ip, const uint8_t *gw, const uint8_t *netmask)
 {
@@ -211,7 +211,7 @@ void stm32_eth_init(const uint8_t *mac, const uint8_t *ip, const uint8_t *gw, co
     Netif_Config();
 
     // stm32_eth_scheduler() will be called every 1ms.
-    TIM_scheduler_Config();
+    // TIM_scheduler_Config();
 
     initDone = 1;
   }
@@ -456,7 +456,7 @@ void ethernetif_notify_conn_changed(struct netif *netif)
 {
   if(netif_is_link_up(netif))
   {
-    printf("Link up\n");
+    core_debug("Link up\n");
 
     /* Update DHCP state machine if DHCP used */
     if(DHCP_Started_by_user == 1) {
@@ -476,7 +476,7 @@ void ethernetif_notify_conn_changed(struct netif *netif)
     /*  When the netif link is down this function must be called.*/
     netif_set_down(netif);
 
-    printf("Link down\n");
+    core_debug("Link down\n");
   }
 }
 
