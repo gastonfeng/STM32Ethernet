@@ -109,14 +109,14 @@ extern "C"
     {
       /* USER CODE BEGIN ETH_MspInit 0 */
 
-  /* USER CODE END ETH_MspInit 0 */
-    /* Enable Peripheral clock */
-    __HAL_RCC_ETH_CLK_ENABLE();
-  
-    __HAL_RCC_GPIOC_CLK_ENABLE();
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-    /**ETH GPIO Configuration    
+      /* USER CODE END ETH_MspInit 0 */
+      /* Enable Peripheral clock */
+      __HAL_RCC_ETH_CLK_ENABLE();
+
+      __HAL_RCC_GPIOC_CLK_ENABLE();
+      __HAL_RCC_GPIOA_CLK_ENABLE();
+      __HAL_RCC_GPIOB_CLK_ENABLE();
+      /**ETH GPIO Configuration    
     PC1     ------> ETH_MDC
     PA1     ------> ETH_REF_CLK
     PA2     ------> ETH_MDIO
@@ -127,10 +127,10 @@ extern "C"
     PB12     ------> ETH_TXD0
     PB13     ------> ETH_TXD1 
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_1;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+      GPIO_InitStruct.Pin = GPIO_PIN_1;
+      GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+      HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
       GPIO_InitStruct.Pin = GPIO_PIN_1 | GPIO_PIN_7;
       GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -214,17 +214,17 @@ extern "C"
 
     heth.Instance = ETH;
     heth.Init.AutoNegotiation = ETH_AUTONEGOTIATION_ENABLE;
-    heth.Init.PhyAddress = DP83848_PHY_ADDRESS;
+    heth.Init.PhyAddress = 1;
     heth.Init.MACAddr = macaddress;
-  heth.Init.RxMode = ETH_RXPOLLING_MODE;
-  heth.Init.ChecksumMode = ETH_CHECKSUM_BY_HARDWARE;
-  heth.Init.MediaInterface = ETH_MEDIA_INTERFACE_RMII;
+    heth.Init.RxMode = ETH_RXPOLLING_MODE;
+    heth.Init.ChecksumMode = ETH_CHECKSUM_BY_HARDWARE;
+    heth.Init.MediaInterface = ETH_MEDIA_INTERFACE_RMII;
 
-  /* USER CODE BEGIN MACADDRESS */
-    
-  /* USER CODE END MACADDRESS */
+    /* USER CODE BEGIN MACADDRESS */
 
-  hal_eth_init_status = HAL_ETH_Init(&heth);
+    /* USER CODE END MACADDRESS */
+
+    hal_eth_init_status = HAL_ETH_Init(&heth);
 
     if (hal_eth_init_status == HAL_OK)
     {
@@ -269,21 +269,21 @@ extern "C"
     /* USER CODE END PHY_PRE_CONFIG */
 
     /**** Configure PHY to generate an interrupt when Eth Link state changes ****/
-    /* Read Register Configuration */
-    HAL_ETH_ReadPHYRegister(&heth, PHY_MICR, &regvalue);
+    // /* Read Register Configuration */
+    // HAL_ETH_ReadPHYRegister(&heth, PHY_MICR, &regvalue);
 
-    regvalue |= (PHY_MICR_INT_EN | PHY_MICR_INT_OE);
+    // regvalue |= (PHY_MICR_INT_EN | PHY_MICR_INT_OE);
 
-    /* Enable Interrupts */
-    HAL_ETH_WritePHYRegister(&heth, PHY_MICR, regvalue);
+    // /* Enable Interrupts */
+    // HAL_ETH_WritePHYRegister(&heth, PHY_MICR, regvalue);
 
-    /* Read Register Configuration */
-    HAL_ETH_ReadPHYRegister(&heth, PHY_MISR, &regvalue);
+    // /* Read Register Configuration */
+    // HAL_ETH_ReadPHYRegister(&heth, PHY_MISR, &regvalue);
 
-    regvalue |= PHY_MISR_LINK_INT_EN;
+    // regvalue |= PHY_MISR_LINK_INT_EN;
 
-    /* Enable Interrupt on change of link status */
-    HAL_ETH_WritePHYRegister(&heth, PHY_MISR, regvalue);
+    // /* Enable Interrupt on change of link status */
+    // HAL_ETH_WritePHYRegister(&heth, PHY_MISR, regvalue);
 #endif /* LWIP_ARP || LWIP_ETHERNET */
   }
   void phy_dump()
@@ -491,22 +491,23 @@ extern "C"
     err_t err;
     struct pbuf *p;
 
-  /* move received packet into a new pbuf */
-  p = low_level_input(netif);
-    
-  /* no packet could be read, silently ignore this */
-  if (p == NULL) return;
-    
-  /* entry point to the LwIP stack */
-  err = netif->input(p, netif);
-    
-  if (err != ERR_OK)
-  {
-    LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
-    pbuf_free(p);
-    p = NULL;    
+    /* move received packet into a new pbuf */
+    p = low_level_input(netif);
+
+    /* no packet could be read, silently ignore this */
+    if (p == NULL)
+      return;
+
+    /* entry point to the LwIP stack */
+    err = netif->input(p, netif);
+
+    if (err != ERR_OK)
+    {
+      LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
+      pbuf_free(p);
+      p = NULL;
+    }
   }
-}
 
 #if !LWIP_ARP
   /**
@@ -637,83 +638,82 @@ extern "C"
     }
   }
 
-/* USER CODE BEGIN 7 */
+  /* USER CODE BEGIN 7 */
 
-/* USER CODE END 7 */
+  /* USER CODE END 7 */
 
 #if LWIP_NETIF_LINK_CALLBACK
-/**
+  /**
   * @brief  Link callback function, this function is called on change of link status
   *         to update low level driver configuration.
   * @param  netif: The network interface
   * @retval None
   */
-void ethernetif_update_config(struct netif *netif)
-{
-  __IO uint32_t tickstart = 0;
-  uint32_t regvalue = 0;
-  
-  if(netif_is_link_up(netif))
-  { 
-    /* Restart the auto-negotiation */
-    if(heth.Init.AutoNegotiation != ETH_AUTONEGOTIATION_DISABLE)
+  void ethernetif_update_config(struct netif *netif)
+  {
+    __IO uint32_t tickstart = 0;
+    uint32_t regvalue = 0;
+
+    if (netif_is_link_up(netif))
     {
-      /* Enable Auto-Negotiation */
-      HAL_ETH_WritePHYRegister(&heth, PHY_BCR, PHY_AUTONEGOTIATION);
-      
-      /* Get tick */
-      tickstart = HAL_GetTick();
-      
-      /* Wait until the auto-negotiation will be completed */
-      do
+      /* Restart the auto-negotiation */
+      if (heth.Init.AutoNegotiation != ETH_AUTONEGOTIATION_DISABLE)
       {
-        HAL_ETH_ReadPHYRegister(&heth, PHY_BSR, &regvalue);
-        
-        /* Check for the Timeout ( 1s ) */
-        if((HAL_GetTick() - tickstart ) > 1000)
-        {     
-          /* In case of timeout */ 
-          goto error;
-        }   
-      } while (((regvalue & PHY_AUTONEGO_COMPLETE) != PHY_AUTONEGO_COMPLETE));
-      
-      /* Read the result of the auto-negotiation */
-      HAL_ETH_ReadPHYRegister(&heth, PHY_SR, &regvalue);
-      
-      /* Configure the MAC with the Duplex Mode fixed by the auto-negotiation process */
-      if((regvalue & PHY_DUPLEX_STATUS) != (uint32_t)RESET)
+        /* Enable Auto-Negotiation */
+        HAL_ETH_WritePHYRegister(&heth, PHY_BCR, PHY_AUTONEGOTIATION);
+
+        /* Get tick */
+        tickstart = HAL_GetTick();
+
+        /* Wait until the auto-negotiation will be completed */
+        do
+        {
+          HAL_ETH_ReadPHYRegister(&heth, PHY_BSR, &regvalue);
+
+          /* Check for the Timeout ( 1s ) */
+          if ((HAL_GetTick() - tickstart) > 1000)
+          {
+            /* In case of timeout */
+            goto error;
+          }
+        } while (((regvalue & PHY_AUTONEGO_COMPLETE) != PHY_AUTONEGO_COMPLETE));
+
+        /* Read the result of the auto-negotiation */
+        HAL_ETH_ReadPHYRegister(&heth, PHY_SR, &regvalue);
+
+        /* Configure the MAC with the Duplex Mode fixed by the auto-negotiation process */
+        if ((regvalue & PHY_DUPLEX_STATUS) != (uint32_t)RESET)
+        {
+          /* Set Ethernet duplex mode to Full-duplex following the auto-negotiation */
+          heth.Init.DuplexMode = ETH_MODE_FULLDUPLEX;
+        }
+        else
+        {
+          /* Set Ethernet duplex mode to Half-duplex following the auto-negotiation */
+          heth.Init.DuplexMode = ETH_MODE_HALFDUPLEX;
+        }
+        /* Configure the MAC with the speed fixed by the auto-negotiation process */
+        if (regvalue & PHY_SPEED_STATUS)
+        {
+          /* Set Ethernet speed to 10M following the auto-negotiation */
+          heth.Init.Speed = ETH_SPEED_10M;
+        }
+        else
+        {
+          /* Set Ethernet speed to 100M following the auto-negotiation */
+          heth.Init.Speed = ETH_SPEED_100M;
+        }
+      }
+      else /* AutoNegotiation Disable */
       {
-        /* Set Ethernet duplex mode to Full-duplex following the auto-negotiation */
-        heth.Init.DuplexMode = ETH_MODE_FULLDUPLEX;  
+      error:
+        /* Check parameters */
+        assert_param(IS_ETH_SPEED(heth.Init.Speed));
+        assert_param(IS_ETH_DUPLEX_MODE(heth.Init.DuplexMode));
+
+        /* Set MAC Speed and Duplex Mode to PHY */
+        HAL_ETH_WritePHYRegister(&heth, PHY_BCR, ((uint16_t)(heth.Init.DuplexMode >> 3) | (uint16_t)(heth.Init.Speed >> 1)));
       }
-      else
-      {
-        /* Set Ethernet duplex mode to Half-duplex following the auto-negotiation */
-        heth.Init.DuplexMode = ETH_MODE_HALFDUPLEX;           
-      }
-      /* Configure the MAC with the speed fixed by the auto-negotiation process */
-      if(regvalue & PHY_SPEED_STATUS)
-      {  
-        /* Set Ethernet speed to 10M following the auto-negotiation */
-        heth.Init.Speed = ETH_SPEED_10M; 
-      }
-      else
-      {   
-        /* Set Ethernet speed to 100M following the auto-negotiation */ 
-        heth.Init.Speed = ETH_SPEED_100M;
-      }
-    }
-    else /* AutoNegotiation Disable */
-    {
-    error :
-      /* Check parameters */
-      assert_param(IS_ETH_SPEED(heth.Init.Speed));
-      assert_param(IS_ETH_DUPLEX_MODE(heth.Init.DuplexMode));
-      
-      /* Set MAC Speed and Duplex Mode to PHY */
-      HAL_ETH_WritePHYRegister(&heth, PHY_BCR, ((uint16_t)(heth.Init.DuplexMode >> 3) |
-                                                     (uint16_t)(heth.Init.Speed >> 1))); 
-    }
 
       /* ETHERNET MAC Re-Configuration */
       HAL_ETH_ConfigMAC(&heth, (ETH_MACInitTypeDef *)NULL);
@@ -740,12 +740,23 @@ void ethernetif_update_config(struct netif *netif)
     /* NOTE : This is function clould be implemented in user file
             when the callback is needed,
   */
-
-}
-/* USER CODE END 8 */ 
+  }
+/* USER CODE END 8 */
 #endif /* LWIP_NETIF_LINK_CALLBACK */
 
-/* USER CODE BEGIN 9 */
-
-/* USER CODE END 9 */
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+  /* USER CODE BEGIN 9 */
+  /**
+  * @brief  This function set a custom MAC address. This function must be called
+  *         before ethernetif_init().
+  * @param  mac: mac address
+  * @retval None
+  */
+  void ethernetif_set_mac_addr(const uint8_t *mac)
+  {
+    if (mac != NULL)
+    {
+      memcpy(macaddress, mac, 6);
+    }
+  }
+  /* USER CODE END 9 */
+  /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
