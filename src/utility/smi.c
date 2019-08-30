@@ -1,101 +1,142 @@
-#if 0
+#if 1
 #include "stm32_def.h"
-#define MDIO_IN()                        \
-    {                                    \
-        GPIOA->MODER &= ~(3 << (2 * 2)); \
-        GPIOA->MODER |= 0 << 2 * 2;      \
-    } //PA2
-#define MDIO_OUT()                       \
-    {                                    \
-        GPIOA->MODER &= ~(3 << (2 * 2)); \
-        GPIOA->MODER |= 1 << 2 * 2;      \
-    } //PA2
+void MDIO_IN()
+{
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    //配置PA2 PC1为推完输出，GPIO模拟SMI
+    GPIO_InitStruct.Pin = GPIO_PIN_2;
+//    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_100MHz;
+    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+//    GPIO_InitStruct.GPIO_OType = GPIO_OType_PP; //推完输出
+    GPIO_InitStruct.Pull = GPIO_PULLUP;   //GPIO_PuPd_UP GPIO_PuPd_NOPULL
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+} //PA2
+void MDIO_OUT()
+{
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    //配置PA2 PC1为推完输出，GPIO模拟SMI
+    GPIO_InitStruct.Pin = GPIO_PIN_2;
+//    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_100MHz;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+//    GPIO_InitStruct.GPIO_OType = GPIO_OType_PP; //推完输出
+    GPIO_InitStruct.Pull = GPIO_PULLUP;   //GPIO_PuPd_UP GPIO_PuPd_NOPULL
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+} //PA2
 
-#define MDIO PAout(2) //SCL
-#define MDC PCout(1)  //SDA
-#define READ_MDIO PAin(2)
+//#define MDIO PAout(2) //SCL
+//#define MDC PCout(1)  //SDA
+//#define READ_MDIO PAin(2)
 
+void MDIO1()
+{
+    HAL_GPIO_WritePin(GPIOA,GPIO_PIN_2,1);
+}
+void MDIO0()
+{
+    HAL_GPIO_WritePin(GPIOA,GPIO_PIN_2,0);
+}
+void MDC0()
+{
+    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,0);
+}
+void MDC1()
+{
+    HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,1);
+}
+int READ_MDIO()
+{
+    return HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_2)?1:0;
+}
+void delay_us(int t)
+{
+    volatile int i;
+    for(i=1000; i>0; i--);
+}
 void SMI_Init(void)
 {
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
     //配置PA2 PC1为推完输出，GPIO模拟SMI
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-    GPIO_InitStructure.GPIO_OType = GPIO_OType_PP; //推完输出
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;   //GPIO_PuPd_UP GPIO_PuPd_NOPULL
-    GPIO_Init(GPIOA, &GPIO_InitStructure);         //PA2 MDIO
+    GPIO_InitStruct.Pin = GPIO_PIN_2;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+//    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_100MHz;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+//    GPIO_InitStruct.GPIO_OType = GPIO_OType_PP; //推完输出
+    GPIO_InitStruct.Pull = GPIO_PULLUP;   //GPIO_PuPd_UP GPIO_PuPd_NOPULL
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);         //PA2 MDIO
 
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL; //GPIO_PuPd_UP GPIO_PuPd_NOPULL
-    GPIO_Init(GPIOC, &GPIO_InitStructure);           //PC1 MDC ，不需要上拉
-    MDIO = 1;
-    MDC = 0;
+    GPIO_InitStruct.Pin = GPIO_PIN_1;
+    GPIO_InitStruct.Pull = GPIO_NOPULL; //GPIO_PuPd_UP GPIO_PuPd_NOPULL
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);           //PC1 MDC ，不需要上拉
+    MDIO1();
+    MDC0();
 }
 
-u8 SMI_Read_One_Byte(void)
+uint8_t SMI_Read_One_Byte(void)
 {
-    u8 i, receive = 0;
+    uint8_t i, receive = 0;
     //    MDIO_IN();
     for (i = 0; i < 8; i++)
     {
         receive <<= 1;
-        MDC = 0; //拉低时钟
+        MDC0(); //拉低时钟
         delay_us(1);
-        MDC = 1; //上升沿传输数据
+        MDC1(); //上升沿传输数据
         delay_us(1);
-        if (READ_MDIO)
+        if (READ_MDIO())
             receive |= 0x01; //上升沿，高电平期间读数据
-        MDC = 0;             //时钟恢复低电平
+        MDC0();             //时钟恢复低电平
     }
     return receive;
 }
 
-u8 SMI_Read_2Bit(void)
+uint8_t SMI_Read_2Bit(void)
 {
-    u8 i, receive = 0;
+    uint8_t i, receive = 0;
     //    MDIO_IN();
     for (i = 0; i < 2; i++)
     {
         receive <<= 1;
-        MDC = 0; //拉低时钟
+        MDC0(); //拉低时钟
         delay_us(1);
-        MDC = 1; //上升沿传输数据
+        MDC1(); //上升沿传输数据
         delay_us(1);
-        if (READ_MDIO)
+        if (READ_MDIO())
             receive |= 0x01; //上升沿，高电平期间读数据
-        MDC = 0;             //恢复低电平
+        MDC0();             //恢复低电平
     }
     return receive;
 }
 
-void SMI_Write_One_Byte(u8 data)
+void SMI_Write_One_Byte(uint8_t data)
 {
-    u8 i;
+    uint8_t i;
     //    MDIO_OUT();
     for (i = 0; i < 8; i++)
     {
-        MDC = 0;
-        MDIO = (data & 0x80) >> 7; //准备数据
+        MDC0();
+        ((data & 0x80) >> 7)?MDIO1():MDIO0(); //准备数据
         delay_us(1);
-        MDC = 1;     //上升沿传输数据
+        MDC1();     //上升沿传输数据
         delay_us(1); //保持一段时间
-        MDC = 0;     //恢复低电平
+        MDC0();     //恢复低电平
         data <<= 1;
     }
 }
 
-void SMI_Write_2Bit(u8 data)
+void SMI_Write_2Bit(uint8_t data)
 {
-    u8 i;
-    MDIO_OUT();
+    uint8_t i;
+//    MDIO_OUT();
     for (i = 0; i < 2; i++)
     {
-        MDC = 0;
-        MDIO = (data & 0x2) >> 1;
+        MDC0();
+        ((data & 0x2) >> 1)?MDIO1():MDIO0();
         delay_us(1);
-        MDC = 1;     //上升沿传输数据
+        MDC1();     //上升沿传输数据
         delay_us(1); //保持一段时间
-        MDC = 0;     //恢复低电平
+        MDC0();     //恢复低电平
         data <<= 1;
     }
 }
@@ -105,11 +146,11 @@ void SMI_Write_2Bit(u8 data)
 #define WRITE_OP_CODE_2bit 0x1
 #define SMI_OP_CODE_2bit 0x00
 #define SMI_TA 0x02
-void SMI_Write_Frame(u16 PHYAddress, u16 PHYReg, u16 PHYValue)
+void SMI_Write_Frame(uint16_t PHYAddress, uint16_t PHYReg, uint16_t PHYValue)
 {
-    u8 addr;
+    uint8_t addr;
 
-    addr = (PHYAddress & 0x7) << 5 | (PHYReg & 0x1F);
+    addr = ((PHYAddress & 0x7) << 5 )| (PHYReg & 0x1F);
 
     MDIO_OUT();
     ////32 bit Preamble
@@ -132,12 +173,12 @@ void SMI_Write_Frame(u16 PHYAddress, u16 PHYReg, u16 PHYValue)
     MDIO_IN(); //恢复输入高阻态
 }
 
-u16 SMI_Read_Reg(u16 PHYAddress, u16 PHYReg)
+uint16_t SMI_Read_Reg(uint16_t PHYAddress, uint16_t PHYReg)
 {
-    u8 addr;
-    u16 data;
+    uint8_t addr;
+    uint16_t data;
 
-    addr = (PHYAddress & 0x7) << 5 | (PHYReg & 0x1F);
+    addr = ((PHYAddress & 0x7) << 5) | (PHYReg & 0x1F);
 
     ////32 bit Preamble
     MDIO_OUT();
@@ -147,8 +188,8 @@ u16 SMI_Read_Reg(u16 PHYAddress, u16 PHYReg)
     SMI_Write_One_Byte(0xFF);
 
     SMI_Write_2Bit(START_OF_FRAME_2bit);
-    SMI_Write_2Bit(READ_OP_CODE_2bit);
     SMI_Write_2Bit(0x0); //PHYAD[4:3] decide dir: 0x2/0x3 is write
+    SMI_Write_2Bit(READ_OP_CODE_2bit);
     SMI_Write_One_Byte(addr);
 
     MDIO_IN();
@@ -159,26 +200,39 @@ u16 SMI_Read_Reg(u16 PHYAddress, u16 PHYReg)
     return data;
 }
 
-u8 KSZ8863_Get_Reg_Value(u8 port, u8 reg_num)
+uint8_t KSZ8863_Get_Reg_Value(uint8_t port, uint8_t reg_num)
 {
-    u16 reg;
+    uint16_t reg;
     //        reg = ETH_ReadPHYRegister(port, reg_num); //从port1的1号寄存器中读取网络速度和双工模式
-
+    char buf[32];
     reg = SMI_Read_Reg(port, reg_num);
 
-    printf("port %d, reg 0x%x = 0x%x \r\n", port, reg_num, reg);
+    sprintf(buf,"port %d, reg 0x%x = 0x%x \r\n", port, reg_num, reg);
+    core_debug(buf);
     return reg;
 }
 
+uint8_t ksz8863_reg(uint8_t addr)
+{
+    return SMI_Read_Reg((addr>>5)&0x7,addr&0x1f);
+}
 void KSZ8863_Print_Reg_Value(void)
 {
-    u8 i, port;
+    uint8_t i, port;
+    for(i=0; i<10; i++)
+    {
+        char buf[32],reg;
+        reg = ksz8863_reg(i);
+
+        sprintf(buf," reg 0x%x = 0x%x \r\n",  i, reg);
+        core_debug(buf);
+    }
     for (port = 1; port < 4; port++)
     {
         for (i = 0; i < 6; i++)
         {
             KSZ8863_Get_Reg_Value(port, i);
-            delay_ms(100);
+            HAL_Delay(100);
         }
     }
 }

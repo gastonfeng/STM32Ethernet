@@ -71,7 +71,7 @@
 /*----- Value in opt.h for LWIP_DHCP: 0 -----*/
 #define LWIP_DHCP 1
 /*----- Default Value for LWIP_ICMP: 1 ---*/
-#define LWIP_ICMP 0
+#define LWIP_ICMP 1
 /*----- Default Value for LWIP_DNS: 0 ---*/
 #define LWIP_DNS 1
 /*----- Value in opt.h for NO_SYS: 0 -----*/
@@ -105,13 +105,13 @@
 /*----- Default Value for LWIP_HTTPD: 0 ---*/
 #define LWIP_HTTPD 1
 /*----- Default Value for LWIP_HTTPD_CGI_SSI: 0 ---*/
-#define LWIP_HTTPD_CGI_SSI 1
+#define LWIP_HTTPD_CGI_SSI 0
 /*----- Default Value for LWIP_HTTPD_SSI: 0 ---*/
-#define LWIP_HTTPD_SSI 1
+#define LWIP_HTTPD_SSI 0
 /*----- Default Value for LWIP_HTTPD_SSI_RAW: 0 ---*/
-#define LWIP_HTTPD_SSI_RAW 1
+#define LWIP_HTTPD_SSI_RAW 0
 /*----- Default Value for LWIP_HTTPD_SUPPORT_POST: 0 ---*/
-#define LWIP_HTTPD_SUPPORT_POST 1
+#define LWIP_HTTPD_SUPPORT_POST 0
 /*----- Default Value for LWIP_PERF: 0 ---*/
 #define LWIP_PERF 1
 /*----- Default Value for LWIP_STATS: 0 ---*/
@@ -138,6 +138,8 @@
 #define CHECKSUM_CHECK_ICMP 0
 /*----- Value in opt.h for CHECKSUM_CHECK_ICMP6: 1 -----*/
 #define CHECKSUM_CHECK_ICMP6 0
+/*----- Default Value for LWIP_DBG_MIN_LEVEL: LWIP_DBG_LEVEL_ALL ---*/
+#define LWIP_DBG_MIN_LEVEL LWIP_DBG_LEVEL_WARNING
 /*-----------------------------------------------------------------------------*/
 /* USER CODE BEGIN 1 */
 
