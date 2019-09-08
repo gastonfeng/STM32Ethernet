@@ -105,13 +105,13 @@
 /*----- Default Value for LWIP_HTTPD: 0 ---*/
 #define LWIP_HTTPD 1
 /*----- Default Value for LWIP_HTTPD_CGI_SSI: 0 ---*/
-#define LWIP_HTTPD_CGI_SSI 0
+#define LWIP_HTTPD_CGI_SSI 1
 /*----- Default Value for LWIP_HTTPD_SSI: 0 ---*/
-#define LWIP_HTTPD_SSI 0
+#define LWIP_HTTPD_SSI 1
 /*----- Default Value for LWIP_HTTPD_SSI_RAW: 0 ---*/
 #define LWIP_HTTPD_SSI_RAW 0
 /*----- Default Value for LWIP_HTTPD_SUPPORT_POST: 0 ---*/
-#define LWIP_HTTPD_SUPPORT_POST 0
+#define LWIP_HTTPD_SUPPORT_POST 1
 /*----- Default Value for LWIP_PERF: 0 ---*/
 #define LWIP_PERF 1
 /*----- Default Value for LWIP_STATS: 0 ---*/
