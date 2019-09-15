@@ -163,20 +163,20 @@ extern "C"
     }
   }
 
-/* USER CODE BEGIN 4 */
-void phy_dump()
-{
+  /* USER CODE BEGIN 4 */
+  void phy_dump()
+  {
     int i;
-    for(i=0; i<32; i++)
+    for (i = 0; i < 32; i++)
     {
-        char buf[32];
-        uint32_t val;
-        HAL_ETH_ReadPHYRegister(&heth, i, &val);
-        sprintf(buf,"%d = 0x%x\n",i,val);
-        core_debug(buf);
+      char buf[32];
+      uint32_t val;
+      HAL_ETH_ReadPHYRegister(&heth, i, &val);
+      sprintf(buf, "%d = 0x%x\n", i, (unsigned int)val);
+      core_debug(buf);
     }
-}
-/* USER CODE END 4 */
+  }
+  /* USER CODE END 4 */
 
   /*******************************************************************************
                        LL Driver Interface ( LwIP stack --> ETH) 
@@ -190,27 +190,27 @@ void phy_dump()
  */
   static void low_level_init(struct netif *netif)
   {
-    uint32_t regvalue = 0;
+    // uint32_t regvalue = 0;
     HAL_StatusTypeDef hal_eth_init_status;
 
     /* Init ETH */
 
     heth.Instance = ETH;
-  heth.Init.AutoNegotiation = ETH_AUTONEGOTIATION_DISABLE;
-  heth.Init.Speed = ETH_SPEED_100M;
-  heth.Init.DuplexMode = ETH_MODE_FULLDUPLEX;
+    heth.Init.AutoNegotiation = ETH_AUTONEGOTIATION_DISABLE;
+    heth.Init.Speed = ETH_SPEED_100M;
+    heth.Init.DuplexMode = ETH_MODE_FULLDUPLEX;
     heth.Init.PhyAddress = 3;
     heth.Init.MACAddr = macaddress;
     heth.Init.RxMode = ETH_RXPOLLING_MODE;
     heth.Init.ChecksumMode = ETH_CHECKSUM_BY_HARDWARE;
     heth.Init.MediaInterface = ETH_MEDIA_INTERFACE_RMII;
 
-  /* USER CODE BEGIN MACADDRESS */
+    /* USER CODE BEGIN MACADDRESS */
     // HAL_GPIO_WritePin(ETH_RST_GPIO_Port,ETH_RST_Pin,0);
     // HAL_Delay(200);
     // HAL_GPIO_WritePin(ETH_RST_GPIO_Port,ETH_RST_Pin,1);
     // HAL_Delay(200);
-  /* USER CODE END MACADDRESS */
+    /* USER CODE END MACADDRESS */
 
     hal_eth_init_status = HAL_ETH_Init(&heth);
 
@@ -218,6 +218,10 @@ void phy_dump()
     {
       /* Set netif link flag */
       netif->flags |= NETIF_FLAG_LINK_UP;
+    }
+    else
+    {
+      core_debug("hal_eth_init_status error");
     }
     /* Initialize Tx Descriptors list: Chain Mode */
     HAL_ETH_DMATxDescListInit(&heth, DMATxDscrTab, &Tx_Buff[0][0], ETH_TXBUFNB);
@@ -274,10 +278,10 @@ void phy_dump()
     // HAL_ETH_WritePHYRegister(&heth, PHY_MISR, regvalue);
 #endif /* LWIP_ARP || LWIP_ETHERNET */
 
-/* USER CODE BEGIN LOW_LEVEL_INIT */ 
+    /* USER CODE BEGIN LOW_LEVEL_INIT */
     // phy_dump();
-/* USER CODE END LOW_LEVEL_INIT */
-}
+    /* USER CODE END LOW_LEVEL_INIT */
+  }
 
   /**
  * This function should do the actual transmission of the packet. The packet is
@@ -315,6 +319,7 @@ void phy_dump()
       if ((DmaTxDesc->Status & ETH_DMATXDESC_OWN) != (uint32_t)RESET)
       {
         errval = ERR_USE;
+        core_debug("error %s ,L%d", __FILE__, __LINE__);
         goto error;
       }
 
@@ -472,22 +477,23 @@ void phy_dump()
     err_t err;
     struct pbuf *p;
 
-  /* move received packet into a new pbuf */
-  p = low_level_input(netif);
-    
-  /* no packet could be read, silently ignore this */
-  if (p == NULL) return;
-    
-  /* entry point to the LwIP stack */
-  err = netif->input(p, netif);
-    
-  if (err != ERR_OK)
-  {
-    LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
-    pbuf_free(p);
-    p = NULL;    
+    /* move received packet into a new pbuf */
+    p = low_level_input(netif);
+
+    /* no packet could be read, silently ignore this */
+    if (p == NULL)
+      return;
+
+    /* entry point to the LwIP stack */
+    err = netif->input(p, netif);
+
+    if (err != ERR_OK)
+    {
+      LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
+      pbuf_free(p);
+      p = NULL;
+    }
   }
-}
 
 #if !LWIP_ARP
   /**
