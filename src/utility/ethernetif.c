@@ -275,7 +275,7 @@ void phy_dump()
 #endif /* LWIP_ARP || LWIP_ETHERNET */
 
 /* USER CODE BEGIN LOW_LEVEL_INIT */ 
-    phy_dump();
+    // phy_dump();
 /* USER CODE END LOW_LEVEL_INIT */
 }
 

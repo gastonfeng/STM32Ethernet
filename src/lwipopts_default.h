@@ -65,7 +65,7 @@
 /*----- CHECKSUM_BY_HARDWARE enabled -----*/
 #define CHECKSUM_BY_HARDWARE 1
 /*-----------------------------------------------------------------------------*/
-
+#define LWIP_MDNS_RESPONDER 1
 /* LwIP Stack Parameters (modified compared to initialization value in opt.h) -*/
 /* Parameters set in STM32CubeMX LwIP Configuration GUI -*/
 /*----- Value in opt.h for LWIP_DHCP: 0 -----*/
