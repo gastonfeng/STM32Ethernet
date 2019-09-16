@@ -12,5 +12,9 @@
   "platforms": "ststm32",
   "build": {
     "libArchive": false
-  }
+  },
+  "dependencies": [{
+      "name": "ArduinoHttpClient",
+      "version": "https://gitee.com/kaikong/ArduinoHttpClient.git"
+  }]
 }
