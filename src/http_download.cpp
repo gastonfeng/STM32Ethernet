@@ -1,7 +1,7 @@
 #include "ArduinoHttpClient.h"
 #include "EthernetClient.h"
 
-#include "FlashFs.h"
+#include "flashFs.h"
 #define CHUNK_SIZE 1024
 
 int download(const char *host, uint16_t port, char *url, char *filename)
