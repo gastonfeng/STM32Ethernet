@@ -68,10 +68,10 @@ extern "C"
  * Note: This is planned to extend Timer API's of the Arduino STM32 core
  *       They could be used for this library when available
  */
-  // #ifndef DEFAULT_ETHERNET_TIMER
-  // #define DEFAULT_ETHERNET_TIMER  TIM14
-  // #warning "Default timer used to call ethernet scheduler at regular interval: TIM14"
-  // #endif
+#ifndef DEFAULT_ETHERNET_TIMER
+#define DEFAULT_ETHERNET_TIMER TIM4
+#warning "Default timer used to call ethernet scheduler at regular interval: TIM14"
+#endif
 
   /* Ethernet configuration: user parameters */
   struct stm32_eth_config
@@ -99,17 +99,23 @@ extern "C"
   /* Ethernet link status periodic timer */
   static uint32_t gEhtLinkTickStart = 0;
 
+#if !defined(STM32_CORE_VERSION) || (STM32_CORE_VERSION <= 0x01060100)
   /* Handler for stimer */
   static stimer_t TimHandle;
+#endif
 
   /*************************** Function prototype *******************************/
   static void Netif_Config(void);
   static err_t tcp_recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
   static err_t tcp_sent_callback(void *arg, struct tcp_pcb *tpcb, u16_t len);
   static void tcp_err_callback(void *arg, err_t err);
-  static void scheduler_callback(stimer_t *htim);
   static void TIM_scheduler_Config(void);
-
+  void srv_txt(struct mdns_service *service, void *txt_userdata)
+  {
+    uint8_t res = 0;
+    res = mdns_resp_add_service_txtitem(service, "beremiz", 7);
+    LWIP_ERROR("mdns add sevice txt failed.", res == ERR_OK, return );
+  }
   /**
 * @brief  Configurates the network interface
 * @param  None
@@ -146,35 +152,51 @@ extern "C"
 * @param  htim: pointer to stimer_t
 * @retval None
 */
+#if !defined(STM32_CORE_VERSION) || (STM32_CORE_VERSION <= 0x01060100)
   static void scheduler_callback(stimer_t *htim)
+#else
+static void scheduler_callback(HardwareTimer *htim)
+#endif
   {
     UNUSED(htim);
     stm32_eth_scheduler();
   }
 
+#if !defined(STM32_CORE_VERSION) || (STM32_CORE_VERSION <= 0x01060100)
   /**
 * @brief  Enable the timer used to call ethernet scheduler function at regular
 *         interval.
 * @param  None
 * @retval None
 */
-  // static void TIM_scheduler_Config(void)
-  // {
-  //   /* Set TIMx instance. */
-  //   TimHandle.timer = DEFAULT_ETHERNET_TIMER;
-
-  //   /* Timer set to 1ms */
-  //   TimerHandleInit(&TimHandle, (uint16_t)(1000 - 1), ((uint32_t)(getTimerClkFreq(DEFAULT_ETHERNET_TIMER) / (1000000)) - 1));
-
-  //   attachIntHandle(&TimHandle, scheduler_callback);
-  // }
-
-  void srv_txt(struct mdns_service *service, void *txt_userdata)
+  static void TIM_scheduler_Config(void)
   {
-    uint8_t res = 0;
-    res = mdns_resp_add_service_txtitem(service, "beremiz", 7);
-    LWIP_ERROR("mdns add sevice txt failed.", res == ERR_OK, return );
+    /* Set TIMx instance. */
+    TimHandle.timer = DEFAULT_ETHERNET_TIMER;
+    /* Timer set to 1ms */
+    TimerHandleInit(&TimHandle, (uint16_t)(1000 - 1), ((uint32_t)(getTimerClkFreq(DEFAULT_ETHERNET_TIMER) / (1000000)) - 1));
+    attachIntHandle(&TimHandle, scheduler_callback);
   }
+#else
+/**
+* @brief  Enable the timer used to call ethernet scheduler function at regular
+*         interval.
+* @param  None
+* @retval None
+*/
+static void TIM_scheduler_Config(void)
+{
+  /* Configure HardwareTimer */
+  HardwareTimer *EthTim = new HardwareTimer(DEFAULT_ETHERNET_TIMER);
+  EthTim->setMode(1, TIMER_OUTPUT_COMPARE);
+
+  /* Timer set to 1ms */
+  EthTim->setOverflow(1000, MICROSEC_FORMAT);
+  EthTim->attachInterrupt(scheduler_callback);
+  EthTim->resume();
+}
+#endif
+
   void stm32_eth_init(const uint8_t *mac, const uint8_t *ip, const uint8_t *gw, const uint8_t *netmask)
   {
     static uint8_t initDone = 0;
@@ -232,7 +254,7 @@ extern "C"
       Netif_Config();
 
       // stm32_eth_scheduler() will be called every 1ms.
-      // TIM_scheduler_Config();
+      TIM_scheduler_Config();
       mdns_resp_init();
       mdns_resp_add_netif(&gnetif, "zynq", 60);
       mdns_resp_add_service(&gnetif, "Web", "_http", DNSSD_PROTO_UDP, 54321, 60, srv_txt, NULL);

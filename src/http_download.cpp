@@ -4,7 +4,7 @@
 #include "flashFs.h"
 #define CHUNK_SIZE 1024
 
-int download(const char *host, uint16_t port, char *url, char *filename)
+int download(const char *host, uint16_t port, const char *url, const char *filename)
 {
     EthernetClient client;
     HttpClient http(client, host, port);
@@ -27,10 +27,12 @@ int download(const char *host, uint16_t port, char *url, char *filename)
         bool success = true;
         FlashFile fil(filename, SPIFFS_O_CREAT | SPIFFS_WRONLY);
         // read all data from server
+        int last_tick = millis();
         while (success && http.connected() && (downloadRemaining > 0))
         {
             // get available data size
-
+            if (millis() - last_tick > 10000)
+                break;
             auto size = http.available();
             if (size > 0)
             {
@@ -42,19 +44,17 @@ int download(const char *host, uint16_t port, char *url, char *filename)
                 {
                     downloadRemaining -= c;
                 }
-                core_debug("recv=%d,remain=%d,success=%d\n", c, downloadRemaining,success);
+                core_debug("recv=%d,remain=%d,success=%d\n", c, downloadRemaining, success);
+                last_tick = millis();
             }
             yield();
         }
         fil.close();
 
         core_debug("[HTTP] connection closed or file end.\n");
-        return 0;
+        return downloadRemaining;
     }
-    else
-    {
-        core_debug("[HTTP] GET... failed, error: %d\n", httpCode);
-    }
+    core_debug("[HTTP] GET... failed, error: %d\n", httpCode);
     http.stop();
     return 1;
 }
