@@ -1,5 +1,6 @@
 #if 1
 #include "stm32_def.h"
+#include "core_debug.h"
 void MDIO_IN()
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
