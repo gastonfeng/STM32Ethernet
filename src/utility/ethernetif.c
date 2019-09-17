@@ -276,9 +276,9 @@ extern "C"
     /* device capabilities */
     /* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
 #if LWIP_ARP
-    netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP;
+    netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP|NETIF_FLAG_IGMP;
 #else
-    netif->flags |= NETIF_FLAG_BROADCAST;
+    netif->flags |= NETIF_FLAG_BROADCAST|NETIF_FLAG_IGMP;
 #endif /* LWIP_ARP */
 
     /* Enable MAC and DMA transmission and reception */

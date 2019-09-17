@@ -255,9 +255,15 @@ static void TIM_scheduler_Config(void)
 
       // stm32_eth_scheduler() will be called every 1ms.
       TIM_scheduler_Config();
+#if LWIP_MDNS_RESPONDER
       mdns_resp_init();
-      mdns_resp_add_netif(&gnetif, "zynq", 60);
-      mdns_resp_add_service(&gnetif, "Web", "_http", DNSSD_PROTO_UDP, 54321, 60, srv_txt, NULL);
+#if LWIP_NETIF_HOSTNAME
+      mdns_resp_add_netif(&gnetif, gnetif.hostname, 3600);
+#else
+      mdns_resp_add_netif(&gnetif, "zynq", 3600);
+#endif
+      mdns_resp_add_service(&gnetif, "kt1260", "_pac", DNSSD_PROTO_UDP, 54321, 3600, srv_txt, NULL);
+#endif
       initDone = 1;
     }
 
