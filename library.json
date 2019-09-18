@@ -2,8 +2,7 @@
   "name": "STM32Ethernet",
   "keywords": "Ethernet",
   "description": "Arduino library to support Ethernet for STM32 based board.",
-  "repository":
-  {
+  "repository": {
     "type": "git",
     "url": "https://github.com/stm32duino/STM32Ethernet"
   },
@@ -11,10 +10,13 @@
   "frameworks": "arduino",
   "platforms": "ststm32",
   "build": {
-    "libArchive": false
+    "libArchive": false,
+    "flags": [
+      "-I src/utility"
+    ]
   },
   "dependencies": [{
-      "name": "ArduinoHttpClient",
-      "version": "https://gitee.com/kaikong/ArduinoHttpClient.git"
+    "name": "ArduinoHttpClient",
+    "version": "https://gitee.com/kaikong/ArduinoHttpClient.git"
   }]
 }
