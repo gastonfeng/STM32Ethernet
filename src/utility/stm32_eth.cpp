@@ -262,7 +262,7 @@ static void TIM_scheduler_Config(void)
 #else
       mdns_resp_add_netif(&gnetif, "zynq", 3600);
 #endif
-      mdns_resp_add_service(&gnetif, "kt1260", "_pac", DNSSD_PROTO_UDP, 54321, 3600, srv_txt, NULL);
+      mdns_resp_add_service(&gnetif, "kt1260", "_Beremiz", DNSSD_PROTO_UDP, 54321, 3600, srv_txt, NULL);
 #endif
       initDone = 1;
     }
