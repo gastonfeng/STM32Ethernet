@@ -16,6 +16,9 @@
     ]
   },
   "dependencies": [{
+    "name": "LwIP",
+    "version": "https://gitee.com/kaikong/LwIP.git"
+  }, {
     "name": "ArduinoHttpClient",
     "version": "https://gitee.com/kaikong/ArduinoHttpClient.git"
   }]
