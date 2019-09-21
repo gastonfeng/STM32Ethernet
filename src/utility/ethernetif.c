@@ -347,7 +347,7 @@ extern "C"
       if ((DmaTxDesc->Status & ETH_DMATXDESC_OWN) != (uint32_t)RESET)
       {
         errval = ERR_USE;
-        core_debug("error %s ,L%d", __FILE__, __LINE__);
+        // core_debug("error %s ,L%d", __FILE__, __LINE__);
         goto error;
       }
 
