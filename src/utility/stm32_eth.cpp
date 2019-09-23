@@ -70,7 +70,7 @@ extern "C"
  */
 #ifndef DEFAULT_ETHERNET_TIMER
 #define DEFAULT_ETHERNET_TIMER TIM4
-#warning "Default timer used to call ethernet scheduler at regular interval: TIM14"
+#warning "Default timer used to call ethernet scheduler at regular interval: TIM4"
 #endif
 
   /* Ethernet configuration: user parameters */
