@@ -263,12 +263,14 @@ extern "C"
     netif->hwaddr_len = ETH_HWADDR_LEN;
 
     /* set MAC hardware address */
-    netif->hwaddr[0] = macaddress[0];
-    netif->hwaddr[1] = macaddress[1];
-    netif->hwaddr[2] = macaddress[2];
-    netif->hwaddr[3] = macaddress[3];
-    netif->hwaddr[4] = macaddress[4];
-    netif->hwaddr[5] = macaddress[5];
+            uint8_t id[12];
+        HAL_GetUID((uint32_t *)id);
+    netif->hwaddr[0] = id[0];
+    netif->hwaddr[1] = id[2];
+    netif->hwaddr[2] = id[4];
+    netif->hwaddr[3] = id[6];
+    netif->hwaddr[4] = id[10];
+    netif->hwaddr[5] = id[11];
 
     /* maximum transfer unit */
     netif->mtu = 1500;
