@@ -67,3 +67,14 @@ Call `Ethernet::schedule()` performs an update of the LwIP stack.<br>
 ## Wiki
 
 You can find information at https://github.com/stm32duino/wiki/wiki/STM32Ethernet
+
+# DHCP
+.pio\libdeps\BOARDTEST\STM32Ethernet\src\utility\stm32_eth.cpp
+	stm32_DHCP_process
+.pio\libdeps\BOARDTEST\LwIP\src\core\ipv4\dhcp.c:
+	dhcp_timeout
+	dhcp_start
+	dhcp_renew
+	dhcp_t1_timeout
+	dhcp_coarse_tmr
+	dhcp_recv
