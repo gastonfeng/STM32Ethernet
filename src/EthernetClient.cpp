@@ -46,9 +46,7 @@ int EthernetClient::connect(const char *host, uint16_t port)
     return ret;
   }
 }
-extern "C"{
-void check_memp();
-}
+
 int EthernetClient::connect(IPAddress ip, uint16_t port)
 {
   /* Can't create twice the same client */
@@ -64,8 +62,8 @@ int EthernetClient::connect(IPAddress ip, uint16_t port)
   {
     return 0;
   }
-  
-  check_memp();
+
+
   /* Creates a new TCP protocol control block */
   _tcp_client->pcb = tcp_new();
 
@@ -73,8 +71,8 @@ int EthernetClient::connect(IPAddress ip, uint16_t port)
   {
     return 0;
   }
-  
-  check_memp();
+
+
   _tcp_client->data.p = NULL;
   _tcp_client->data.available = 0;
   _tcp_client->state = TCP_NONE;
@@ -86,13 +84,13 @@ int EthernetClient::connect(IPAddress ip, uint16_t port)
     stop();
     return 0;
   }
- 
-  check_memp();
+
+
   uint32_t startTime = millis();
   while (_tcp_client->state == TCP_NONE)
   {
-   
-    check_memp();
+
+
     // stm32_eth_scheduler();
     if ((_tcp_client->state == TCP_CLOSING) || ((millis() - startTime) >= 10000))
     {
@@ -202,7 +200,10 @@ void EthernetClient::stop()
   // close tcp connection if not closed yet
   if (status() != TCP_CLOSING)
   {
-    tcp_connection_close(_tcp_client->pcb, _tcp_client);
+
+    if (_tcp_client->pcb->state != CLOSED)
+      tcp_connection_close(_tcp_client->pcb, _tcp_client);
+
   }
 }
 

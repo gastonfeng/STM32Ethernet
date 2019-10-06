@@ -897,13 +897,10 @@ static void TIM_scheduler_Config(void)
       if ((tcp_arg != NULL) && (tcp_arg->pcb == tpcb))
       {
         tcp_arg->state = TCP_CONNECTED;
-
         /* initialize LwIP tcp_recv callback function */
         tcp_recv(tpcb, tcp_recv_callback);
-
         /* initialize LwIP tcp_sent callback function */
         tcp_sent(tpcb, tcp_sent_callback);
-
         /* initialize LwIP tcp_err callback function */
         tcp_err(tpcb, tcp_err_callback);
 
