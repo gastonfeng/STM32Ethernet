@@ -26,7 +26,7 @@ int download(const char *host, uint16_t port, const char *url, const char *filen
         uint8_t cur_buffer[CHUNK_SIZE];
         bool success = true;
         FlashFile fil;
-        fil.open(filename, FA_READ);
+        fil.open_rdonly(filename);
         // read all data from server
         int last_tick = millis();
         while (success && http.connected() && (downloadRemaining > 0))
