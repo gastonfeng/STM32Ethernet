@@ -134,14 +134,14 @@ size_t EthernetClient::write(const uint8_t *buf, size_t size)
     return 0;
   }
 
-  // stm32_eth_scheduler();
+  stm32_eth_scheduler();
 
   return size;
 }
 
 int EthernetClient::available()
 {
-  // stm32_eth_scheduler();
+  stm32_eth_scheduler();
   if (_tcp_client != NULL)
   {
     return _tcp_client->data.available;
@@ -187,7 +187,7 @@ void EthernetClient::flush()
     return;
   }
   tcp_output(_tcp_client->pcb);
-  // stm32_eth_scheduler();
+  stm32_eth_scheduler();
 }
 
 void EthernetClient::stop()

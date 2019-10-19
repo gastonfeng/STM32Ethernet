@@ -50,18 +50,18 @@
 #include "netif/etharp.h"
 #include "ethernetif.h"
 #include <string.h>
-#include "cmsis_os.h"
 #include "PeripheralPins.h"
 #include "stm32_eth.h"
 #include "variant.h"
 #include "core_debug.h"
 
-/* USER CODE END 0 */
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define TIME_WAITING_FOR_INPUT (portMAX_DELAY)
-#define INTERFACE_THREAD_STACK_SIZE (1024)
 /* Network interface name */
 #define IFNAME0 's'
 #define IFNAME1 't'
@@ -88,10 +88,9 @@
 #endif
   __ALIGN_BEGIN uint8_t Tx_Buff[ETH_TXBUFNB][ETH_TX_BUF_SIZE] __ALIGN_END; /* Ethernet Transmit Buffer */
 
-  osSemaphoreId s_xSemaphore = NULL;
   ETH_HandleTypeDef heth;
 
-/* USER CODE BEGIN 3 */
+  static uint8_t macaddress[6] = {MAC_ADDR0, MAC_ADDR1, MAC_ADDR2, MAC_ADDR3, MAC_ADDR4, MAC_ADDR5};
 
   /* Private function prototypes -----------------------------------------------*/
   /* Private functions ---------------------------------------------------------*/
@@ -153,8 +152,6 @@
       GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
       HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-      HAL_NVIC_SetPriority(ETH_IRQn, 5, 0);
-      HAL_NVIC_EnableIRQ(ETH_IRQn);
       /* USER CODE BEGIN ETH_MspInit 1 */
 
       /* USER CODE END ETH_MspInit 1 */
@@ -188,17 +185,12 @@
 
       HAL_GPIO_DeInit(GPIOB, GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13);
 
-      HAL_NVIC_DisableIRQ(ETH_IRQn);
       /* USER CODE BEGIN ETH_MspDeInit 1 */
 
       /* USER CODE END ETH_MspDeInit 1 */
     }
   }
 
-  void HAL_ETH_RxCpltCallback(ETH_HandleTypeDef *heth)
-  {
-    osSemaphoreRelease(s_xSemaphore);
-  }
   /* USER CODE BEGIN 4 */
   void phy_dump()
   {
@@ -231,22 +223,13 @@
 
     /* Init ETH */
 
-    uint8_t id[12];
-    HAL_GetUID((uint32_t *)id);
-    netif->hwaddr[0] = id[0];
-    netif->hwaddr[1] = id[2];
-    netif->hwaddr[2] = id[4];
-    netif->hwaddr[3] = id[6];
-    netif->hwaddr[4] = id[10];
-    netif->hwaddr[5] = id[11];
-	
     heth.Instance = ETH;
     heth.Init.AutoNegotiation = ETH_AUTONEGOTIATION_DISABLE;
     heth.Init.Speed = ETH_SPEED_100M;
     heth.Init.DuplexMode = ETH_MODE_FULLDUPLEX;
     heth.Init.PhyAddress = 3;
-    heth.Init.MACAddr = netif->hwaddr;
-    heth.Init.RxMode = ETH_RXINTERRUPT_MODE;
+    heth.Init.MACAddr = macaddress;
+    heth.Init.RxMode = ETH_RXPOLLING_MODE;
     heth.Init.ChecksumMode = ETH_CHECKSUM_BY_HARDWARE;
     heth.Init.MediaInterface = ETH_MEDIA_INTERFACE_RMII;
 
@@ -268,7 +251,6 @@
     {
       core_debug("hal_eth_init_status error");
     }
- 
     /* Initialize Tx Descriptors list: Chain Mode */
     HAL_ETH_DMATxDescListInit(&heth, DMATxDscrTab, &Tx_Buff[0][0], ETH_TXBUFNB);
 
@@ -281,7 +263,14 @@
     netif->hwaddr_len = ETH_HWADDR_LEN;
 
     /* set MAC hardware address */
-
+            uint8_t id[12];
+        HAL_GetUID((uint32_t *)id);
+    netif->hwaddr[0] = id[0];
+    netif->hwaddr[1] = id[2];
+    netif->hwaddr[2] = id[4];
+    netif->hwaddr[3] = id[6];
+    netif->hwaddr[4] = id[10];
+    netif->hwaddr[5] = id[11];
 
     /* maximum transfer unit */
     netif->mtu = 1500;
@@ -289,16 +278,11 @@
     /* device capabilities */
     /* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
 #if LWIP_ARP
-    netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP;
+    netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP|NETIF_FLAG_IGMP;
 #else
-    netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_IGMP;
+    netif->flags |= NETIF_FLAG_BROADCAST|NETIF_FLAG_IGMP;
 #endif /* LWIP_ARP */
 
-    osSemaphoreDef(SEM);
-    s_xSemaphore = osSemaphoreCreate(osSemaphore(SEM), 1);
-
-    osThreadDef(EthIf, ethernetif_input, osPriorityRealtime, 0, INTERFACE_THREAD_STACK_SIZE);
-    osThreadCreate(osThread(EthIf), netif);
     /* Enable MAC and DMA transmission and reception */
     HAL_ETH_Start(&heth);
 
@@ -443,7 +427,7 @@
     uint32_t i = 0;
 
     /* get received frame */
-    if (HAL_ETH_GetReceivedFrame_IT(&heth) != HAL_OK)
+    if (HAL_ETH_GetReceivedFrame(&heth) != HAL_OK)
       return NULL;
 
     /* Obtain the size of the packet and put it into the "len" variable. */
@@ -518,31 +502,26 @@
   *
   * @param netif the lwip network interface structure for this ethernetif
   */
-  void ethernetif_input(void const *argument)
+  void ethernetif_input(struct netif *netif)
   {
+    err_t err;
     struct pbuf *p;
-    struct netif *netif = (struct netif *)argument;
 
-    for (;;)
+    /* move received packet into a new pbuf */
+    p = low_level_input(netif);
+
+    /* no packet could be read, silently ignore this */
+    if (p == NULL)
+      return;
+
+    /* entry point to the LwIP stack */
+    err = netif->input(p, netif);
+
+    if (err != ERR_OK)
     {
-      if (osSemaphoreWait(s_xSemaphore, TIME_WAITING_FOR_INPUT) == osOK)
-      {
-        do
-        {
-          p = low_level_input(netif);
-
-          /* no packet could be read, silently ignore this */
-          if (p != NULL)
-          {
-            /* entry point to the LwIP stack */
-            if (netif->input(p, netif) != ERR_OK)
-
-            {
-              pbuf_free(p);
-            }
-          }
-        } while (p != NULL);
-      }
+      LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
+      pbuf_free(p);
+      p = NULL;
     }
   }
 
@@ -646,31 +625,32 @@
   * @param  netif: the network interface
   * @retval None
   */
+  uint32_t EthernetLinkTimer = 0;
 
-  void ethernetif_set_link(void const *argument)
+  void ethernetif_set_link(struct netif *netif)
   {
     uint32_t regvalue = 0;
-    struct link_str *link_arg = (struct link_str *)argument;
-
-    for (;;)
+    /* Ethernet Link every 200ms */
+    if (HAL_GetTick() - EthernetLinkTimer >= 200)
     {
+      EthernetLinkTimer = HAL_GetTick();
+
       /* Read PHY_BSR*/
       HAL_ETH_ReadPHYRegister(&heth, PHY_BSR, &regvalue);
 
       regvalue &= PHY_LINKED_STATUS;
 
       /* Check whether the netif link down and the PHY link is up */
-      if (!netif_is_link_up(link_arg->netif) && (regvalue))
+      if (!netif_is_link_up(netif) && (regvalue))
       {
         /* network cable is connected */
-        netif_set_link_up(link_arg->netif);
+        netif_set_link_up(netif);
       }
-      else if (netif_is_link_up(link_arg->netif) && (!regvalue))
+      else if (netif_is_link_up(netif) && (!regvalue))
       {
         /* network cable is disconnected */
-        netif_set_link_down(link_arg->netif);
+        netif_set_link_down(netif);
       }
-      osDelay(200);
     }
   }
 
@@ -779,16 +759,20 @@
   }
 /* USER CODE END 8 */
 #endif /* LWIP_NETIF_LINK_CALLBACK */
-void ETH_IRQHandler(void)
-{
-  /* USER CODE BEGIN ETH_IRQn 0 */
 
-  /* USER CODE END ETH_IRQn 0 */
-  HAL_ETH_IRQHandler(&heth);
-  /* USER CODE BEGIN ETH_IRQn 1 */
-
-  /* USER CODE END ETH_IRQn 1 */
-}
-
+  /* USER CODE BEGIN 9 */
+  /**
+  * @brief  This function set a custom MAC address. This function must be called
+  *         before ethernetif_init().
+  * @param  mac: mac address
+  * @retval None
+  */
+  void ethernetif_set_mac_addr(const uint8_t *mac)
+  {
+    if (mac != NULL)
+    {
+      memcpy(macaddress, mac, 6);
+    }
+  }
   /* USER CODE END 9 */
   /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
