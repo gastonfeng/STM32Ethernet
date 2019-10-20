@@ -127,10 +127,10 @@ int EthernetClass::maintain(){
  * This function updates the LwIP stack and can be called to be sure to update
  * the stack (e.g. in case of a long loop).
  */
-void EthernetClass::schedule(void)
-{
-  stm32_eth_scheduler();
-}
+// void EthernetClass::schedule(void)
+// {
+//   stm32_eth_scheduler();
+// }
 
 uint8_t * EthernetClass::macAddressDefault(void)
 {
