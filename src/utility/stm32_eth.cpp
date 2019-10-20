@@ -46,6 +46,7 @@
 #include "lwip/dhcp.h"
 #include "lwip/prot/dhcp.h"
 #include "lwip/dns.h"
+#include "lwip/tcpip.h"
 #include "core_debug.h"
 #include "mdns.h"
 #ifdef __cplusplus
@@ -80,7 +81,9 @@ extern "C"
     ip_addr_t netmask;
     ip_addr_t gw;
   };
-
+  osSemaphoreId Netif_LinkSemaphore = NULL;
+  /* Ethernet link thread Argument */
+  struct link_str link_arg;
   /* Use to give user parameters to netif configuration */
   static struct stm32_eth_config gconfig;
 
@@ -152,15 +155,15 @@ extern "C"
 * @param  htim: pointer to stimer_t
 * @retval None
 */
-#if !defined(STM32_CORE_VERSION) || (STM32_CORE_VERSION <= 0x01060100)
-  static void scheduler_callback(stimer_t *htim)
-#else
-static void scheduler_callback(HardwareTimer *htim)
-#endif
-  {
-    UNUSED(htim);
-    stm32_eth_scheduler();
-  }
+// #if !defined(STM32_CORE_VERSION) || (STM32_CORE_VERSION <= 0x01060100)
+//   static void scheduler_callback(stimer_t *htim)
+// #else
+// static void scheduler_callback(HardwareTimer *htim)
+// #endif
+//   {
+//     UNUSED(htim);
+//     stm32_eth_scheduler();
+//   }
 
 #if !defined(STM32_CORE_VERSION) || (STM32_CORE_VERSION <= 0x01060100)
   /**
@@ -169,14 +172,14 @@ static void scheduler_callback(HardwareTimer *htim)
 * @param  None
 * @retval None
 */
-  static void TIM_scheduler_Config(void)
-  {
-    /* Set TIMx instance. */
-    TimHandle.timer = DEFAULT_ETHERNET_TIMER;
-    /* Timer set to 1ms */
-    TimerHandleInit(&TimHandle, (uint16_t)(1000 - 1), ((uint32_t)(getTimerClkFreq(DEFAULT_ETHERNET_TIMER) / (1000000)) - 1));
-    attachIntHandle(&TimHandle, scheduler_callback);
-  }
+  // static void TIM_scheduler_Config(void)
+  // {
+  //   /* Set TIMx instance. */
+  //   TimHandle.timer = DEFAULT_ETHERNET_TIMER;
+  //   /* Timer set to 1ms */
+  //   TimerHandleInit(&TimHandle, (uint16_t)(1000 - 1), ((uint32_t)(getTimerClkFreq(DEFAULT_ETHERNET_TIMER) / (1000000)) - 1));
+  //   attachIntHandle(&TimHandle, scheduler_callback);
+  // }
 #else
 /**
 * @brief  Enable the timer used to call ethernet scheduler function at regular
@@ -204,12 +207,12 @@ static void TIM_scheduler_Config(void)
     if (!initDone)
     {
       /* Initialize the LwIP stack */
-      lwip_init();
+      tcpip_init(0,0);
 
-      if (mac != NULL)
-      {
-        ethernetif_set_mac_addr(mac);
-      } // else default value is used: MAC_ADDR0 ... MAC_ADDR5
+      // if (mac != NULL)
+      // {
+      //   ethernetif_set_mac_addr(mac);
+      // } // else default value is used: MAC_ADDR0 ... MAC_ADDR5
 
       if (ip != NULL)
       {
@@ -254,7 +257,7 @@ static void TIM_scheduler_Config(void)
       Netif_Config();
 
       // stm32_eth_scheduler() will be called every 1ms.
-      TIM_scheduler_Config();
+      // TIM_scheduler_Config();
 #if LWIP_MDNS_RESPONDER
       mdns_resp_init();
 #if LWIP_NETIF_HOSTNAME
@@ -269,44 +272,21 @@ static void TIM_scheduler_Config(void)
 
     /* Reset DHCP if used */
     User_notification(&gnetif);
+    /* create a binary semaphore used for informing ethernetif of frame reception */
+    osSemaphoreDef(Netif_SEM);
+    Netif_LinkSemaphore = osSemaphoreCreate(osSemaphore(Netif_SEM), 1);
+
+    link_arg.netif = &gnetif;
+    link_arg.semaphore = Netif_LinkSemaphore;
+    /* Create the Ethernet link handler thread */
+    osThreadDef(LinkThr, ethernetif_set_link, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
+    osThreadCreate(osThread(LinkThr), &link_arg);
 
     /* Update LwIP stack */
-    stm32_eth_scheduler();
+    // stm32_eth_scheduler();
   }
 
-  /**
-  * @brief  This function must be called in main loop in standalone mode.
-  * @param  None
-  * @retval None
-  */
-  void stm32_eth_scheduler(void)
-  {
-    static int doing = 0;
-    if (doing)
-      return;
-    doing = 1;
-    /* Read a received packet from the Ethernet buffers and send it
-  to the lwIP for handling */
-#ifndef ETH_INPUT_USE_IT
-    ethernetif_input(&gnetif);
-#endif /* ETH_INPUT_USE_IT */
-
-    /* Check ethernet link status */
-    if ((HAL_GetTick() - gEhtLinkTickStart) >= TIME_CHECK_ETH_LINK_STATE)
-    {
-      ethernetif_set_link(&gnetif);
-      gEhtLinkTickStart = HAL_GetTick();
-    }
-
-    /* Handle LwIP timeouts */
-    sys_check_timeouts();
-
-#if LWIP_DHCP
-    stm32_DHCP_Periodic_Handle(&gnetif);
-#endif /* LWIP_DHCP */
-    doing = 0;
-  }
-
+ 
 #if LWIP_DHCP
 
   /**
@@ -650,7 +630,7 @@ static void TIM_scheduler_Config(void)
       tickstart = HAL_GetTick();
       while (*ipaddr == 0)
       {
-        stm32_eth_scheduler();
+        // stm32_eth_scheduler();
         if ((HAL_GetTick() - tickstart) >= TIMEOUT_DNS_REQUEST)
         {
           ret = -1;

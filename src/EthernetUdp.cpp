@@ -59,7 +59,7 @@ uint8_t EthernetUDP::begin(uint16_t port) {
   _port = port;
   _remaining = 0;
 
-  stm32_eth_scheduler();
+  // stm32_eth_scheduler();
 
   return 1;
 }
@@ -79,7 +79,7 @@ void EthernetUDP::stop()
     _udp.pcb = NULL;
   }
 
-  stm32_eth_scheduler();
+  // stm32_eth_scheduler();
 }
 
 int EthernetUDP::beginPacket(const char *host, uint16_t port)
@@ -111,7 +111,7 @@ int EthernetUDP::beginPacket(IPAddress ip, uint16_t port)
   }
 
   udp_recv(_udp.pcb, &udp_receive_callback, &_udp);
-  stm32_eth_scheduler();
+  // stm32_eth_scheduler();
 
   return 1;
 }
@@ -133,7 +133,7 @@ int EthernetUDP::endPacket()
   }
 
   _data = stm32_free_data(_data);
-  stm32_eth_scheduler();
+  // stm32_eth_scheduler();
 
   return 1;
 }
@@ -163,7 +163,7 @@ int EthernetUDP::parsePacket()
   //   read();
   // }
 
-  stm32_eth_scheduler();
+  // stm32_eth_scheduler();
 
   if (_udp.data.available > 0)
   {
