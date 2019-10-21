@@ -16,5 +16,6 @@
       "-I \"$PROJECTLIBDEPS_DIR/$PIOENV/STM32duino FreeRTOS/portable/CMSIS_RTOS\"",
       "-I \"$PROJECTLIBDEPS_DIR/$PIOENV/STM32duino FreeRTOS/src\""
     ]
+
   }
 }
