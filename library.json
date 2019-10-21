@@ -23,5 +23,8 @@
   }, {
     "name": "ArduinoHttpClient",
     "version": "https://gitee.com/kaikong/ArduinoHttpClient.git"
+  }, {
+    "version": "https://gitee.com/kaikong/STM32FreeRTOS.git",
+    "name": "STM32FreeRTOS"
   }]
 }
