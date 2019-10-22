@@ -16,15 +16,5 @@
       "-I \"$PROJECTLIBDEPS_DIR/$PIOENV/STM32duino FreeRTOS/portable/CMSIS_RTOS\"",
       "-I \"$PROJECTLIBDEPS_DIR/$PIOENV/STM32duino FreeRTOS/src\""
     ]
-  },
-  "dependencies": [{
-    "name": "LwIP",
-    "version": "https://gitee.com/kaikong/LwIP.git"
-  }, {
-    "name": "ArduinoHttpClient",
-    "version": "https://gitee.com/kaikong/ArduinoHttpClient.git"
-  }, {
-    "version": "https://gitee.com/kaikong/STM32FreeRTOS.git",
-    "name": "STM32FreeRTOS"
-  }]
+  }
 }
