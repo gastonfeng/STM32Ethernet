@@ -34,11 +34,17 @@ extern "C"
 // (port 80 is default for HTTP):
 EthernetServer server(80);
 void web_init();
-
+uint8_t ip[4], enDhcp = 0;
 void httpd_setup()
 {
   // start the Ethernet connection and the server:
-  Ethernet.begin();
+    if (enDhcp)
+        Ethernet.begin();
+    else
+    {
+        IPAddress ipp(192, 168, 31, 156);
+        Ethernet.begin(ipp);
+    }
   httpd_init();
   web_init();
 }
