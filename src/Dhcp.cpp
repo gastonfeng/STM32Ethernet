@@ -1,6 +1,6 @@
 // DHCP Library v0.3 - April 25, 2009
 // Author: Jordan Terrell - blog.jordanterrell.com
-
+#if LWIP_DHCP
 #include <string.h>
 #include <stdlib.h>
 #include "Dhcp.h"
@@ -139,3 +139,4 @@ IPAddress DhcpClass::getDnsServerIp()
 {
   return IPAddress(stm32_eth_get_dnsaddr());
 }
+#endif

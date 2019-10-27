@@ -134,7 +134,7 @@ void stm32_set_DHCP_state(uint8_t state);
 uint8_t stm32_get_DHCP_state(void);
 uint8_t stm32_dhcp_started(void);
 #else
-#error "LWIP_DHCP must be enabled in lwipopts.h"
+// #error "LWIP_DHCP must be enabled in lwipopts.h"
 #endif
 
 #if LWIP_DNS

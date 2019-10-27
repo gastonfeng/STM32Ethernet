@@ -155,15 +155,15 @@ extern "C"
 * @param  htim: pointer to stimer_t
 * @retval None
 */
-// #if !defined(STM32_CORE_VERSION) || (STM32_CORE_VERSION <= 0x01060100)
-//   static void scheduler_callback(stimer_t *htim)
-// #else
-// static void scheduler_callback(HardwareTimer *htim)
-// #endif
-//   {
-//     UNUSED(htim);
-//     stm32_eth_scheduler();
-//   }
+  // #if !defined(STM32_CORE_VERSION) || (STM32_CORE_VERSION <= 0x01060100)
+  //   static void scheduler_callback(stimer_t *htim)
+  // #else
+  // static void scheduler_callback(HardwareTimer *htim)
+  // #endif
+  //   {
+  //     UNUSED(htim);
+  //     stm32_eth_scheduler();
+  //   }
 
 #if !defined(STM32_CORE_VERSION) || (STM32_CORE_VERSION <= 0x01060100)
   /**
@@ -207,7 +207,7 @@ static void TIM_scheduler_Config(void)
     if (!initDone)
     {
       /* Initialize the LwIP stack */
-      tcpip_init(0,0);
+      tcpip_init(0, 0);
 
       // if (mac != NULL)
       // {
@@ -286,7 +286,6 @@ static void TIM_scheduler_Config(void)
     // stm32_eth_scheduler();
   }
 
- 
 #if LWIP_DHCP
 
   /**
@@ -495,12 +494,13 @@ static void TIM_scheduler_Config(void)
   * @param  None
   * @retval address in uint32_t format
   */
+#if LWIP_DHCP
   uint32_t stm32_eth_get_dhcpaddr(void)
   {
     struct dhcp *dhcp = (struct dhcp *)netif_get_client_data(&gnetif, LWIP_NETIF_CLIENT_DATA_INDEX_DHCP);
     return ip4_addr_get_u32(&(dhcp->server_ip_addr));
   }
-
+#endif
 #if LWIP_NETIF_LINK_CALLBACK
 
   /**
@@ -573,7 +573,9 @@ static void TIM_scheduler_Config(void)
     ip_addr_t ip;
 
     /* DNS initialized by DHCP when call dhcp_start() */
+#if LWIP_DHCP
     if (!stm32_dhcp_started())
+#endif
     {
       dns_init();
       IP_ADDR4(&ip, dnsaddr[0], dnsaddr[1], dnsaddr[2], dnsaddr[3]);
