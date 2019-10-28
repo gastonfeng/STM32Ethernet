@@ -527,6 +527,7 @@
     {
       if (osSemaphoreWait(s_xSemaphore, TIME_WAITING_FOR_INPUT) == osOK)
       {
+        net_led_on();
         do
         {
           p = low_level_input(netif);
@@ -542,6 +543,7 @@
             }
           }
         } while (p != NULL);
+        net_led_off();
       }
     }
   }
