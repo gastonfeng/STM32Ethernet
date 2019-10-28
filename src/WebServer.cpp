@@ -32,7 +32,7 @@ extern "C"
 // Initialize the Ethernet server library
 // with the IP address and port you want to use
 // (port 80 is default for HTTP):
-EthernetServer server(80);
+//EthernetServer server(80);
 void web_init();
 uint8_t ip[4];
 #if LWIP_DHCP

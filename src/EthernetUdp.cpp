@@ -25,7 +25,7 @@
  *
  * bjoern@cs.stanford.edu 12/30/2008
  */
-
+#include "EthernetUdp.h"
 #include "STM32Ethernet.h"
 #include "Udp.h"
 #include "Dns.h"
@@ -84,6 +84,7 @@ void EthernetUDP::stop()
 
 int EthernetUDP::beginPacket(const char *host, uint16_t port)
 {
+#if LWIP_DNS
   // Look up the host first
   int ret = 0;
   DNSClient dns;
@@ -96,7 +97,9 @@ int EthernetUDP::beginPacket(const char *host, uint16_t port)
   } else {
     return ret;
   }
+#endif
 }
+
 
 int EthernetUDP::beginPacket(IPAddress ip, uint16_t port)
 {

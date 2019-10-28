@@ -1,7 +1,7 @@
 // Arduino DNS client for WizNet5100-based Ethernet shield
 // (c) Copyright 2009-2010 MCQN Ltd.
 // Released under Apache License, version 2.0
-
+#if LWIP_DNS
 #ifndef DNSClient_h
 #define DNSClient_h
 
@@ -36,4 +36,5 @@ protected:
     IPAddress iDNSServer;
 };
 
+#endif
 #endif

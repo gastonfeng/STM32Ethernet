@@ -30,7 +30,7 @@ EthernetClient::EthernetClient(struct tcp_struct *tcpClient)
 
 int EthernetClient::connect(const char *host, uint16_t port)
 {
-  // Look up the host first
+#if LWIP_DNS  // Look up the host first
   int ret = 0;
   DNSClient dns;
   IPAddress remote_addr;
@@ -45,6 +45,7 @@ int EthernetClient::connect(const char *host, uint16_t port)
   {
     return ret;
   }
+#endif
 }
 
 int EthernetClient::connect(IPAddress ip, uint16_t port)

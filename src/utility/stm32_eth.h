@@ -141,7 +141,7 @@ uint8_t stm32_dhcp_started(void);
 void stm32_dns_init(const uint8_t *dnsaddr);
 int8_t stm32_dns_gethostbyname(const char *hostname, uint32_t *ipaddr);
 #else
-#error "LWIP_DNS must be enabled in lwipopts.h"
+// #error "LWIP_DNS must be enabled in lwipopts.h"
 #endif
 
 #if LWIP_UDP

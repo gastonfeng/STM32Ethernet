@@ -483,12 +483,13 @@ static void TIM_scheduler_Config(void)
   * @param  None
   * @retval address in uint32_t format
   */
+ #if LWIP_DNS
   uint32_t stm32_eth_get_dnsaddr(void)
   {
     const ip_addr_t *tmp = dns_getserver(0);
     return ip4_addr_get_u32(tmp);
   }
-
+#endif
   /**
   * @brief  Converts DHCP address in readable format for user.
   * @param  None
