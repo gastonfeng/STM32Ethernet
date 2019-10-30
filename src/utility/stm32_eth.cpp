@@ -263,7 +263,7 @@ static void TIM_scheduler_Config(void)
 #if LWIP_NETIF_HOSTNAME
       mdns_resp_add_netif(&gnetif, gnetif.hostname, 3600);
 #else
-      mdns_resp_add_netif(&gnetif, "zynq", 3600);
+      mdns_resp_add_netif(&gnetif, "kaikong", 3600);
 #endif
       mdns_resp_add_service(&gnetif, "kt1260", "_Beremiz", DNSSD_PROTO_UDP, 54321, 3600, srv_txt, NULL);
 #endif

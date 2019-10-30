@@ -70,7 +70,7 @@
 /*----- Default Value for LWIP_NETIF_LINK_CALLBACK: 0 ---*/
 #define LWIP_NETIF_LINK_CALLBACK 1
 /*----- Value in opt.h for TCPIP_THREAD_STACKSIZE: 0 -----*/
-#define TCPIP_THREAD_STACKSIZE 256
+//#define TCPIP_THREAD_STACKSIZE 256
 /*----- Value in opt.h for TCPIP_THREAD_PRIO: 1 -----*/
 #define TCPIP_THREAD_PRIO 3
 /*----- Value in opt.h for TCPIP_MBOX_SIZE: 0 -----*/
@@ -96,7 +96,7 @@
 /*----- Default Value for LWIP_HTTPD_SSI_MULTIPART: 0 ---*/
 #define LWIP_HTTPD_SSI_MULTIPART 1
 /*----- Default Value for LWIP_HTTPD_CUSTOM_FILES: 0 ---*/
-#define LWIP_HTTPD_CUSTOM_FILES 1
+#define LWIP_HTTPD_CUSTOM_FILES 0
 /*----- Value in opt.h for HTTPD_USE_CUSTOM_FSDATA: 0 -----*/
 #define HTTPD_USE_CUSTOM_FSDATA 0
 /*----- Default Value for LWIP_MDNS: 0 ---*/
