@@ -279,7 +279,7 @@ static void TIM_scheduler_Config(void)
     link_arg.netif = &gnetif;
     link_arg.semaphore = Netif_LinkSemaphore;
     /* Create the Ethernet link handler thread */
-    osThreadDef(LinkThr, ethernetif_set_link, osPriorityNormal, 0, 40);
+    osThreadDef(LinkThr, ethernetif_set_link, osPriorityNormal, 0, 64);
     osThreadCreate(osThread(LinkThr), &link_arg);
 
     /* Update LwIP stack */
