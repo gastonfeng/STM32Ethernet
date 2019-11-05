@@ -34,22 +34,22 @@ extern "C"
 // (port 80 is default for HTTP):
 //EthernetServer server(80);
 void web_init();
-uint8_t ip[4];
-#if LWIP_DHCP
-uint8_t enDhcp = 0;
-#endif
+// uint8_t ip[4];
+// #if LWIP_DHCP
+// uint8_t enDhcp = 0;
+// #endif
 void httpd_setup()
 {
   // start the Ethernet connection and the server:
-#if LWIP_DHCP
-  if (enDhcp)
-    Ethernet.begin();
-  else
-#endif
-  {
-    IPAddress ipp(192, 168, 31, 156);
-    Ethernet.begin(ipp);
-  }
+// #if LWIP_DHCP
+//   if (enDhcp)
+//     Ethernet.begin();
+//   else
+// #endif
+//   {
+//     IPAddress ipp(192, 168, 31, 156);
+//     Ethernet.begin(ipp);
+//   }
   httpd_init();
   web_init();
 }
