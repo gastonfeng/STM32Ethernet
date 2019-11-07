@@ -61,7 +61,7 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define TIME_WAITING_FOR_INPUT (portMAX_DELAY)
-#define INTERFACE_THREAD_STACK_SIZE ( 1024 )
+#define INTERFACE_THREAD_STACK_SIZE ( 1500 )
 /* Network interface name */
 #define IFNAME0 's'
 #define IFNAME1 't'
@@ -297,7 +297,7 @@
     osSemaphoreDef(SEM);
     s_xSemaphore = osSemaphoreCreate(osSemaphore(SEM), 1);
 
-    osThreadDef(EthIf, ethernetif_input, osPriorityRealtime, 0, INTERFACE_THREAD_STACK_SIZE);
+    osThreadDef(EthIf, ethernetif_input, osPriorityNormal, 0, INTERFACE_THREAD_STACK_SIZE);
     osThreadCreate(osThread(EthIf), netif);
     /* Enable MAC and DMA transmission and reception */
     HAL_ETH_Start(&heth);
