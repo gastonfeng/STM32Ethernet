@@ -121,7 +121,7 @@ extern struct netif gnetif;
 
 /* Exported functions ------------------------------------------------------- */
 void stm32_eth_init(const uint8_t *mac, const uint8_t *ip, const uint8_t *gw, const uint8_t *netmask);
-// void stm32_eth_scheduler(void);
+void stm32_eth_scheduler(void);
 
 void User_notification(struct netif *netif);
 

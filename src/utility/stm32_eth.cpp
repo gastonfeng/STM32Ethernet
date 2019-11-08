@@ -285,7 +285,28 @@ static void TIM_scheduler_Config(void)
     /* Update LwIP stack */
     // stm32_eth_scheduler();
   }
+  void stm32_eth_scheduler(void)
+  {
+    /* Read a received packet from the Ethernet buffers and send it
+  to the lwIP for handling */
+#ifndef ETH_INPUT_USE_IT
+    ethernetif_input(&gnetif);
+#endif /* ETH_INPUT_USE_IT */
 
+    /* Check ethernet link status */
+    if ((HAL_GetTick() - gEhtLinkTickStart) >= TIME_CHECK_ETH_LINK_STATE)
+    {
+      ethernetif_set_link(&gnetif);
+      gEhtLinkTickStart = HAL_GetTick();
+    }
+
+    /* Handle LwIP timeouts */
+    sys_check_timeouts();
+
+#if LWIP_DHCP
+    stm32_DHCP_Periodic_Handle(&gnetif);
+#endif /* LWIP_DHCP */
+  }
 #if LWIP_DHCP
 
   /**
@@ -483,7 +504,7 @@ static void TIM_scheduler_Config(void)
   * @param  None
   * @retval address in uint32_t format
   */
- #if LWIP_DNS
+#if LWIP_DNS
   uint32_t stm32_eth_get_dnsaddr(void)
   {
     const ip_addr_t *tmp = dns_getserver(0);
