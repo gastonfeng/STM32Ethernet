@@ -31,25 +31,28 @@
 #include "Dns.h"
 
 /* Constructor */
-EthernetUDP::EthernetUDP() {}
+EthernetUDP::EthernetUDP() { _data = 0; }
 
 /* Start EthernetUDP socket, listening at local port PORT */
-uint8_t EthernetUDP::begin(uint16_t port) {
+uint8_t EthernetUDP::begin(uint16_t port)
+{
   // Can create a single udp connection per socket
-  if(_udp.pcb != NULL) {
-    return 0;
-  }
-
+  // if(_udp.pcb != NULL) {
+  //   return 0;
+  // }
+  _udp.data.p = 0;
   _udp.pcb = udp_new();
 
-  if(_udp.pcb == NULL) {
+  if (_udp.pcb == NULL)
+  {
     return 0;
   }
 
   IPAddress ip = Ethernet.localIP();
   ip_addr_t ipaddr;
 
-  if(ERR_OK != udp_bind(_udp.pcb, u8_to_ip_addr(rawIPAddress(ip), &ipaddr), port)) {
+  if (ERR_OK != udp_bind(_udp.pcb, u8_to_ip_addr(rawIPAddress(ip), &ipaddr), port))
+  {
     stop();
     return 0;
   }
@@ -66,14 +69,16 @@ uint8_t EthernetUDP::begin(uint16_t port) {
 
 /* return number of bytes available in the current packet,
    will return zero if parsePacket hasn't been called yet */
-int EthernetUDP::available() {
+int EthernetUDP::available()
+{
   return _remaining;
 }
 
 /* Release any resources being used by this EthernetUDP instance */
 void EthernetUDP::stop()
 {
-  if(_udp.pcb != NULL) {
+  if (_udp.pcb != NULL)
+  {
     udp_disconnect(_udp.pcb);
     udp_remove(_udp.pcb);
     _udp.pcb = NULL;
@@ -92,24 +97,28 @@ int EthernetUDP::beginPacket(const char *host, uint16_t port)
 
   dns.begin(Ethernet.dnsServerIP());
   ret = dns.getHostByName(host, remote_addr);
-  if (ret == 1) {
+  if (ret == 1)
+  {
     return beginPacket(remote_addr, port);
-  } else {
+  }
+  else
+  {
     return ret;
   }
 #endif
 }
 
-
 int EthernetUDP::beginPacket(IPAddress ip, uint16_t port)
 {
-  if(_udp.pcb == NULL) {
+  if (_udp.pcb == NULL)
+  {
     return 0;
   }
 
   ip_addr_t ipaddr;
 
-  if(ERR_OK != udp_connect( _udp.pcb, u8_to_ip_addr(rawIPAddress(ip), &ipaddr), port)) {
+  if (ERR_OK != udp_connect(_udp.pcb, u8_to_ip_addr(rawIPAddress(ip), &ipaddr), port))
+  {
     return 0;
   }
 
@@ -121,16 +130,19 @@ int EthernetUDP::beginPacket(IPAddress ip, uint16_t port)
 
 int EthernetUDP::endPacket()
 {
-  if((_udp.pcb == NULL) || (_data == NULL)) {
+  if ((_udp.pcb == NULL) || (_data == NULL))
+  {
     return 0;
   }
 
   // A remote IP & port must be connected to udp pcb. Call ::beginPacket before.
-  if((udp_flags(_udp.pcb) & UDP_FLAGS_CONNECTED) != UDP_FLAGS_CONNECTED) {
+  if ((udp_flags(_udp.pcb) & UDP_FLAGS_CONNECTED) != UDP_FLAGS_CONNECTED)
+  {
     return 0;
   }
 
-  if(ERR_OK != udp_send(_udp.pcb, _data)) {
+  if (ERR_OK != udp_send(_udp.pcb, _data))
+  {
     _data = stm32_free_data(_data);
     return 0;
   }
@@ -149,7 +161,8 @@ size_t EthernetUDP::write(uint8_t byte)
 size_t EthernetUDP::write(const uint8_t *buffer, size_t size)
 {
   _data = stm32_new_data(_data, buffer, size);
-  if(_data == NULL) {
+  if (_data == NULL)
+  {
     return 0;
   }
 
@@ -184,13 +197,14 @@ int EthernetUDP::read()
 {
   uint8_t byte;
 
-  if(_udp.data.p == NULL) {
+  if (_udp.data.p == NULL)
+  {
     return -1;
   }
 
   if (_remaining > 0)
   {
-    if(read(&byte, 1) > 0)
+    if (read(&byte, 1) > 0)
       return byte;
   }
 
@@ -198,9 +212,10 @@ int EthernetUDP::read()
   return -1;
 }
 
-int EthernetUDP::read(unsigned char* buffer, size_t len)
+int EthernetUDP::read(unsigned char *buffer, size_t len)
 {
-  if(_udp.data.p == NULL) {
+  if (_udp.data.p == NULL)
+  {
     return -1;
   }
 
@@ -225,12 +240,10 @@ int EthernetUDP::read(unsigned char* buffer, size_t len)
       _remaining -= got;
       return got;
     }
-
   }
 
   // If we get here, there's no data available or recv failed
   return -1;
-
 }
 
 int EthernetUDP::peek()
