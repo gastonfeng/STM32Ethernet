@@ -230,16 +230,23 @@
     HAL_StatusTypeDef hal_eth_init_status;
 
     /* Init ETH */
-
+#if defined(MAC1)&&defined(MAC2)&&defined(MAC3)&&defined(MAC4)&&defined(MAC5)&&defined(MAC6)
+    netif->hwaddr[0] = MAC1;
+    netif->hwaddr[1] = MAC2;
+    netif->hwaddr[2] = MAC3;
+    netif->hwaddr[3] = MAC4;
+    netif->hwaddr[4] = MAC5;
+    netif->hwaddr[5] = MAC6;
+#else
     uint8_t id[12];
     HAL_GetUID((uint32_t *)id);
-    netif->hwaddr[0] = id[0];
+    netif->hwaddr[0] = id[0]&0xfd;
     netif->hwaddr[1] = id[2];
     netif->hwaddr[2] = id[4];
     netif->hwaddr[3] = id[6];
     netif->hwaddr[4] = id[10];
     netif->hwaddr[5] = id[11];
-	
+	#endif
     heth.Instance = ETH;
     heth.Init.AutoNegotiation = ETH_AUTONEGOTIATION_DISABLE;
     heth.Init.Speed = ETH_SPEED_100M;
