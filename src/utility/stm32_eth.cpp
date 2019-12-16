@@ -285,6 +285,7 @@ static void TIM_scheduler_Config(void)
     /* Update LwIP stack */
     // stm32_eth_scheduler();
   }
+  #if 0
   void stm32_eth_scheduler(void)
   {
     /* Read a received packet from the Ethernet buffers and send it
@@ -307,6 +308,7 @@ static void TIM_scheduler_Config(void)
     stm32_DHCP_Periodic_Handle(&gnetif);
 #endif /* LWIP_DHCP */
   }
+  #endif
 #if LWIP_DHCP
 
   /**
