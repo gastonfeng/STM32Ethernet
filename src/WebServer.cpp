@@ -19,7 +19,7 @@
  by sstaub
  */
 #include <Arduino.h>
-#include <LwIP.h>
+// #include <LwIP.h>
 #include <STM32Ethernet.h>
 #include <core_debug.h>
 extern "C"
