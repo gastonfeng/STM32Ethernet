@@ -1,3 +1,4 @@
+#ifdef HTTP_DOWNLOAD
 #include "ArduinoHttpClient.h"
 #include "EthernetClient.h"
 
@@ -59,3 +60,4 @@ int download(const char *host, uint16_t port, const char *url, const char *filen
     http.stop();
     return 1;
 }
+#endif
