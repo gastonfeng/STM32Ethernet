@@ -199,7 +199,7 @@ static void TIM_scheduler_Config(void)
   EthTim->resume();
 }
 #endif
-
+  extern const char swname[];
   void stm32_eth_init(const uint8_t *mac, const uint8_t *ip, const uint8_t *gw, const uint8_t *netmask)
   {
     static uint8_t initDone = 0;
@@ -265,7 +265,9 @@ static void TIM_scheduler_Config(void)
 #else
       mdns_resp_add_netif(&gnetif, "kaikong", 3600);
 #endif
-      mdns_resp_add_service(&gnetif, "kt1260", "_Beremiz", DNSSD_PROTO_UDP, 54321, 3600, srv_txt, NULL);
+      char buf[16];
+      snprintf(buf, 16, "%sV%d-%d", swname, BUILD_NUMBER, ip[3]);
+      mdns_resp_add_service(&gnetif, hwModel, buf, DNSSD_PROTO_UDP, 54321, 3600, srv_txt, NULL);
 #endif
       initDone = 1;
     }
@@ -285,7 +287,7 @@ static void TIM_scheduler_Config(void)
     /* Update LwIP stack */
     // stm32_eth_scheduler();
   }
-  #if 0
+#if 0
   void stm32_eth_scheduler(void)
   {
     /* Read a received packet from the Ethernet buffers and send it
@@ -308,7 +310,7 @@ static void TIM_scheduler_Config(void)
     stm32_DHCP_Periodic_Handle(&gnetif);
 #endif /* LWIP_DHCP */
   }
-  #endif
+#endif
 #if LWIP_DHCP
 
   /**
