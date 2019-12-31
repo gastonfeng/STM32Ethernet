@@ -187,7 +187,7 @@ extern "C"
 * @brief  Enable the timer used to call ethernet scheduler function at regular
 *         interval.
 * @param  None
-* @retval None
+MDNS_LABEL_MAXLEN* @retval None
 */
 static void TIM_scheduler_Config(void)
 {
@@ -261,14 +261,14 @@ static void TIM_scheduler_Config(void)
       // TIM_scheduler_Config();
 #if LWIP_MDNS_RESPONDER
       mdns_resp_init();
+      char buf[MDNS_LABEL_MAXLEN],buf1[16];
+      snprintf(buf, MDNS_LABEL_MAXLEN, "%sB%d-%d", SWNAME, BUILD_NUMBER, ip[3]);
+      snprintf(buf1,16,"_%s",hwModel);
 #if LWIP_NETIF_HOSTNAME
       mdns_resp_add_netif(&gnetif, gnetif.hostname, 3600);
 #else
-      mdns_resp_add_netif(&gnetif, "kaikong", 3600);
+      mdns_resp_add_netif(&gnetif, buf, 3600);
 #endif
-      char buf[32],buf1[16];
-      snprintf(buf, 32, "%sB%d-%d", SWNAME, BUILD_NUMBER, ip[3]);
-      snprintf(buf1,16,"_%s",hwModel);
       mdns_resp_add_service(&gnetif, buf, buf1, DNSSD_PROTO_UDP, 54321, 3600, srv_txt, NULL);
 #endif
       initDone = 1;
