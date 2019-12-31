@@ -118,7 +118,7 @@ extern "C"
   void srv_txt(struct mdns_service *service, void *txt_userdata)
   {
     uint8_t res = 0;
-    res = mdns_resp_add_service_txtitem(service, hwModel, 7);
+    res = mdns_resp_add_service_txtitem(service, hwModel, strlen(hwModel));
     LWIP_ERROR("mdns add sevice txt failed.", res == ERR_OK, return );
   }
   /**
@@ -266,9 +266,10 @@ static void TIM_scheduler_Config(void)
 #else
       mdns_resp_add_netif(&gnetif, "kaikong", 3600);
 #endif
-      char buf[16];
-      snprintf(buf, 16, "%sV%d-%d", PLC_ID, BUILD_NUMBER, ip[3]);
-      mdns_resp_add_service(&gnetif, hwModel, buf, DNSSD_PROTO_UDP, 54321, 3600, srv_txt, NULL);
+      char buf[32],buf1[16];
+      snprintf(buf, 32, "%sB%d-%d", SWNAME, BUILD_NUMBER, ip[3]);
+      snprintf(buf1,16,"_%s",hwModel);
+      mdns_resp_add_service(&gnetif, buf, buf1, DNSSD_PROTO_UDP, 54321, 3600, srv_txt, NULL);
 #endif
       initDone = 1;
     }

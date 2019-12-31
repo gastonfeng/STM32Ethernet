@@ -1,10 +1,10 @@
 // DHCP Library v0.3 - April 25, 2009
 // Author: Jordan Terrell - blog.jordanterrell.com
-#if LWIP_DHCP
 #ifndef Dhcp_h
 #define Dhcp_h
 
 #include "EthernetUdp.h"
+#if LWIP_DHCP
 
 /* DHCP state machine. */
 #define STATE_DHCP_STOP       DHCP_OFF

@@ -1,9 +1,9 @@
 // DHCP Library v0.3 - April 25, 2009
 // Author: Jordan Terrell - blog.jordanterrell.com
-#if LWIP_DHCP
 #include <string.h>
 #include <stdlib.h>
 #include "Dhcp.h"
+#if LWIP_DHCP
 #include "Arduino.h"
 #include "utility/stm32_eth.h"
 extern struct netif gnetif;
