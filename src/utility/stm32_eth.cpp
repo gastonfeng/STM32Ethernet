@@ -49,6 +49,8 @@
 #include "lwip/tcpip.h"
 #include "core_debug.h"
 #include "mdns.h"
+#include "plc.h"
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -116,7 +118,7 @@ extern "C"
   void srv_txt(struct mdns_service *service, void *txt_userdata)
   {
     uint8_t res = 0;
-    res = mdns_resp_add_service_txtitem(service, "beremiz", 7);
+    res = mdns_resp_add_service_txtitem(service, hwModel, 7);
     LWIP_ERROR("mdns add sevice txt failed.", res == ERR_OK, return );
   }
   /**
@@ -199,7 +201,6 @@ static void TIM_scheduler_Config(void)
   EthTim->resume();
 }
 #endif
-  extern const char swname[];
   void stm32_eth_init(const uint8_t *mac, const uint8_t *ip, const uint8_t *gw, const uint8_t *netmask)
   {
     static uint8_t initDone = 0;
@@ -266,7 +267,7 @@ static void TIM_scheduler_Config(void)
       mdns_resp_add_netif(&gnetif, "kaikong", 3600);
 #endif
       char buf[16];
-      snprintf(buf, 16, "%sV%d-%d", swname, BUILD_NUMBER, ip[3]);
+      snprintf(buf, 16, "%sV%d-%d", PLC_ID, BUILD_NUMBER, ip[3]);
       mdns_resp_add_service(&gnetif, hwModel, buf, DNSSD_PROTO_UDP, 54321, 3600, srv_txt, NULL);
 #endif
       initDone = 1;
