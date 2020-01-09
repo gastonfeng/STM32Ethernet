@@ -1,6 +1,6 @@
 #include "STM32Ethernet.h"
 #include "Dhcp.h"
-#if LWIP_DHCP
+#if DHCP
 int EthernetClass::begin(unsigned long timeout, unsigned long responseTimeout)
 {
   static DhcpClass s_dhcp;
@@ -46,12 +46,12 @@ void EthernetClass::begin(IPAddress local_ip, IPAddress subnet, IPAddress gatewa
   stm32_eth_init(macAddressDefault(), local_ip.raw_address(), gateway.raw_address(), subnet.raw_address());
   /* If there is a local DHCP informs it of our manual IP configuration to
   prevent IP conflict */
-#if LWIP_DHCP
+#if DHCP
   stm32_DHCP_manual_config();
 #endif
   _dnsServerAddress = dns_server;
 }
-#if LWIP_DHCP
+#if DHCP
 int EthernetClass::begin(uint8_t *mac_address, unsigned long timeout, unsigned long responseTimeout)
 {
 
@@ -99,7 +99,7 @@ void EthernetClass::begin(uint8_t *mac, IPAddress local_ip, IPAddress dns_server
   stm32_eth_init(mac, local_ip.raw_address(), gateway.raw_address(), subnet.raw_address());
 /* If there is a local DHCP informs it of our manual IP configuration to
   prevent IP conflict */
-#if LWIP_DHCP
+#if DHCP
   stm32_DHCP_manual_config();
 #endif
   _dnsServerAddress = dns_server;
@@ -108,7 +108,7 @@ void EthernetClass::begin(uint8_t *mac, IPAddress local_ip, IPAddress dns_server
 
 int EthernetClass::maintain()
 {
-#if LWIP_DHCP
+#if DHCP
   int rc = DHCP_CHECK_NONE;
 
   if (_dhcp != NULL)

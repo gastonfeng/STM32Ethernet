@@ -11,7 +11,7 @@ class EthernetClass
 {
 private:
   IPAddress _dnsServerAddress;
-#if LWIP_DHCP
+#if DHCP
   DhcpClass *_dhcp;
 #endif
   uint8_t mac_address[6];
@@ -21,7 +21,7 @@ public:
   // Initialise the Ethernet with the internal provided MAC address and gain the rest of the
   // configuration through DHCP.
   // Returns 0 if the DHCP configuration failed, and 1 if it succeeded
-#if LWIP_DHCP
+#if DHCP
   int begin(unsigned long timeout = 60000, unsigned long responseTimeout = 4000);
 #endif
   void begin(IPAddress local_ip);
@@ -31,7 +31,7 @@ public:
   // Initialise the Ethernet shield to use the provided MAC address and gain the rest of the
   // configuration through DHCP.
   // Returns 0 if the DHCP configuration failed, and 1 if it succeeded
-#if LWIP_DHCP
+#if DHCP
   int begin(uint8_t *mac_address, unsigned long timeout = 60000, unsigned long responseTimeout = 4000);
 #endif
   void begin(uint8_t *mac_address, IPAddress local_ip);

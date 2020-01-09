@@ -49,7 +49,12 @@
 #include "lwip/tcpip.h"
 #include "core_debug.h"
 #include "mdns.h"
+#ifdef PLC
 #include "plc.h"
+#else
+#define SWNAME "TEST"
+#define BUILD_NUMBER 1
+#endif
 
 #ifdef __cplusplus
 extern "C"
