@@ -57,6 +57,8 @@
 #define BUILD_NUMBER 1
 #endif
 
+extern const char *hwModel;
+
 #ifdef __cplusplus
 extern "C"
 {
