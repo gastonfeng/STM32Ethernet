@@ -277,7 +277,7 @@ static void TIM_scheduler_Config(void)
 #else
       mdns_resp_add_netif(&gnetif, buf, 3600);
 #endif
-      mdns_resp_add_service(&gnetif, buf, buf1, DNSSD_PROTO_UDP, 54321, 3600, srv_txt, NULL);
+      mdns_resp_add_service(&gnetif, buf, buf1, DNSSD_PROTO_UDP, 80, 3600, srv_txt, NULL);
 #endif
       initDone = 1;
     }
