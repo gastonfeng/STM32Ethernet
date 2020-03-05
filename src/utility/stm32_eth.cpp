@@ -175,7 +175,7 @@ extern "C"
   //     stm32_eth_scheduler();
   //   }
 
-#if !defined(STM32_CORE_VERSION) || (STM32_CORE_VERSION <= 0x01060100)
+#if 1 //!defined(STM32_CORE_VERSION) || (STM32_CORE_VERSION <= 0x01060100)
   /**
 * @brief  Enable the timer used to call ethernet scheduler function at regular
 *         interval.
