@@ -53,11 +53,11 @@
 #ifdef PLC
 #include "plc.h"
 #else
-#define SWNAME "TEST"
 #define BUILD_NUMBER 1
 #endif
 
 extern const char *hwModel;
+extern const char *SWNAME;
 
 #ifdef __cplusplus
 extern "C"
