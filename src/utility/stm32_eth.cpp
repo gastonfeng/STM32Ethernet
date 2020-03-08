@@ -50,12 +50,7 @@
 #include "core_debug.h"
 #include "mdns.h"
 
-#ifdef PLC
-#include "plc.h"
-#else
-#define BUILD_NUMBER 1
-#endif
-
+extern const int BUILD_NUMBER;
 extern const char *hwModel;
 extern const char *SWNAME;
 
