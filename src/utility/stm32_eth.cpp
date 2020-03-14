@@ -50,7 +50,7 @@
 #include "core_debug.h"
 #include "mdns.h"
 
-extern const int BUILD_NUMBER;
+extern const unsigned short BUILD_NUMBER;
 extern const char *hwModel;
 extern const char *swName;
 
