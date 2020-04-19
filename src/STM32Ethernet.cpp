@@ -40,7 +40,13 @@ void EthernetClass::begin(IPAddress local_ip, IPAddress subnet, IPAddress gatewa
   dns_server[3] = 1;
   begin(local_ip, subnet, gateway, dns_server);
 }
-
+void EthernetClass::set_ip(const IPAddress local_ip)
+{
+  extern struct netif gnetif;
+  ip4_addr_t ip;
+  ip.addr=uint32_t(local_ip);
+  netif_set_ipaddr(&gnetif, &ip);
+}
 void EthernetClass::begin(IPAddress local_ip, IPAddress subnet, IPAddress gateway, IPAddress dns_server)
 {
   stm32_eth_init(macAddressDefault(), local_ip.raw_address(), gateway.raw_address(), subnet.raw_address());

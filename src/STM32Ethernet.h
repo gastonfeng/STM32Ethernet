@@ -38,7 +38,6 @@ public:
   void begin(uint8_t *mac_address, IPAddress local_ip, IPAddress dns_server);
   void begin(uint8_t *mac_address, IPAddress local_ip, IPAddress dns_server, IPAddress gateway);
   void begin(uint8_t *mac_address, IPAddress local_ip, IPAddress dns_server, IPAddress gateway, IPAddress subnet);
-
   int maintain();
   void schedule(void);
 
@@ -48,7 +47,7 @@ public:
   IPAddress subnetMask();
   IPAddress gatewayIP();
   IPAddress dnsServerIP();
-
+  void set_ip(const IPAddress local_ip);
   friend class EthernetClient;
   friend class EthernetServer;
 };
