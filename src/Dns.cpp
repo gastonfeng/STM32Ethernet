@@ -1,9 +1,9 @@
 // Arduino DNS client for WizNet5100-based Ethernet shield
 // (c) Copyright 2009-2010 MCQN Ltd.
 // Released under Apache License, version 2.0
-#if LWIP_DNS
 #include "EthernetUdp.h"
 #include "utility/stm32_eth.h"
+#if LWIP_DNS
 
 #include "Dns.h"
 #include <string.h>
