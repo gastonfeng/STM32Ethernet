@@ -112,7 +112,7 @@ struct tcp_struct {
 #define DHCP_ASK_RELEASE           (uint8_t) 6
 
 /* Maximum number of client per server */
-#define MAX_CLIENT  32
+#define MAX_CLIENT  8
 
 #ifdef ETH_INPUT_USE_IT
 extern struct netif gnetif;
