@@ -123,6 +123,7 @@ size_t EthernetClient::write(const uint8_t *buf, size_t size)
   {
     return 0;
   }
+  _tcp_client->pcb->flags|=TF_NODELAY;
 
   if (ERR_OK != tcp_write(_tcp_client->pcb, buf, size, TCP_WRITE_FLAG_COPY))
   {
