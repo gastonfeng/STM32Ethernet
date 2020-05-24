@@ -264,7 +264,7 @@ static void TIM_scheduler_Config(void)
 #if LWIP_MDNS_RESPONDER
       mdns_resp_init();
       char buf[MDNS_LABEL_MAXLEN], buf1[16];
-      snprintf(buf, MDNS_LABEL_MAXLEN, "%sB%d-%d", hwModel, BUILD_NUMBER, ip[3]);
+      snprintf(buf, MDNS_LABEL_MAXLEN, "PLC-%d-%d", BUILD_NUMBER, ip[3]);
       snprintf(buf1, 16, "_%s", hwModel);
 #if LWIP_NETIF_HOSTNAME
       mdns_resp_add_netif(&gnetif, gnetif.hostname, 3600);
