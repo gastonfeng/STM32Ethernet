@@ -52,7 +52,7 @@
 
 extern const unsigned short BUILD_NUMBER;
 extern const char *hwModel;
-
+s8_t mdns_service;
 #ifdef __cplusplus
 extern "C"
 {
@@ -271,7 +271,7 @@ static void TIM_scheduler_Config(void)
 #else
       mdns_resp_add_netif(&gnetif, buf, 3600);
 #endif
-      mdns_resp_add_service(&gnetif, buf, buf1, DNSSD_PROTO_UDP, 80, 3600, srv_txt, NULL);
+      mdns_service = mdns_resp_add_service(&gnetif, buf, buf1, DNSSD_PROTO_UDP, 80, 3600, srv_txt, NULL);
 #endif
       initDone = 1;
     }
@@ -285,7 +285,7 @@ static void TIM_scheduler_Config(void)
     link_arg.netif = &gnetif;
     link_arg.semaphore = Netif_LinkSemaphore;
     /* Create the Ethernet link handler thread */
-    osThreadDef(LinkThr, ethernetif_set_link, osPriorityNormal, 0, 256);
+    osThreadDef(LinkThr, ethernetif_set_link, osPriorityNormal, 0, 128);
     osThreadCreate(osThread(LinkThr), &link_arg);
 
     /* Update LwIP stack */
@@ -1145,15 +1145,7 @@ static void TIM_scheduler_Config(void)
 
   void set_mdns(const char *name)
   {
-    char buf[MDNS_LABEL_MAXLEN], buf1[16];
-    snprintf(buf, MDNS_LABEL_MAXLEN, "%s", name);
-    snprintf(buf1, 16, "_%s", hwModel);
-#if LWIP_NETIF_HOSTNAME
-    mdns_resp_add_netif(&gnetif, gnetif.hostname, 3600);
-#else
-    mdns_resp_add_netif(&gnetif, buf, 3600);
-#endif
-    mdns_resp_add_service(&gnetif, buf, buf1, DNSSD_PROTO_UDP, 80, 3600, srv_txt, NULL);
+    mdns_resp_rename_service(&gnetif, mdns_service, name);
   }
 #endif /* LWIP_TCP */
 
