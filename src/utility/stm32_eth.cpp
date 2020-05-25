@@ -51,6 +51,7 @@
 #include "mdns.h"
 
 extern const unsigned short BUILD_NUMBER;
+extern const char *mdns_name;
 s8_t mdns_service;
 #ifdef __cplusplus
 extern "C"
@@ -119,7 +120,7 @@ extern "C"
   void srv_txt(struct mdns_service *service, void *txt_userdata)
   {
     uint8_t res = 0;
-    res = mdns_resp_add_service_txtitem(service, MDNS, strlen(MDNS));
+    res = mdns_resp_add_service_txtitem(service, mdns_name, strlen(mdns_name));
     LWIP_ERROR("mdns add sevice txt failed.", res == ERR_OK, return );
   }
   /**
@@ -264,7 +265,7 @@ static void TIM_scheduler_Config(void)
       mdns_resp_init();
       char buf[MDNS_LABEL_MAXLEN], buf1[16];
       snprintf(buf, MDNS_LABEL_MAXLEN, "PLC-%d-%d", BUILD_NUMBER, ip[3]);
-      snprintf(buf1, 16, "_%s", MDNS);
+      snprintf(buf1, 16, "_%s", mdns_name);
 #if LWIP_NETIF_HOSTNAME
       mdns_resp_add_netif(&gnetif, gnetif.hostname, 3600);
 #else
