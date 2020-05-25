@@ -61,7 +61,7 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define TIME_WAITING_FOR_INPUT (portMAX_DELAY)
-#define INTERFACE_THREAD_STACK_SIZE (1024)
+#define INTERFACE_THREAD_STACK_SIZE (1500)
 /* Network interface name */
 #define IFNAME0 's'
 #define IFNAME1 't'
