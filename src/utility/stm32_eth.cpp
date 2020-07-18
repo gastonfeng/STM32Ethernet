@@ -50,7 +50,7 @@
 #include "core_debug.h"
 #include "mdns.h"
 
-extern const unsigned short BUILD_NUMBER;
+extern const unsigned short build_number;
 extern const char *mdns_name;
 s8_t mdns_service;
 #ifdef __cplusplus
@@ -264,7 +264,7 @@ static void TIM_scheduler_Config(void)
 #if LWIP_MDNS_RESPONDER
       mdns_resp_init();
       char buf[MDNS_LABEL_MAXLEN], buf1[16];
-      snprintf(buf, MDNS_LABEL_MAXLEN, "PLC-%d-%d", BUILD_NUMBER, ip[3]);
+      snprintf(buf, MDNS_LABEL_MAXLEN, "PLC-%d-%d", build_number, ip[3]);
       snprintf(buf1, 16, "_%s", mdns_name);
 #if LWIP_NETIF_HOSTNAME
       mdns_resp_add_netif(&gnetif, gnetif.hostname, 3600);
