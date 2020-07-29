@@ -11,6 +11,8 @@ class EthernetClass
 {
 private:
   IPAddress _dnsServerAddress;
+  IPAddress local_ip;
+  uint32_t net_tick;
 #if DHCP
   DhcpClass *_dhcp;
 #endif
@@ -48,6 +50,12 @@ public:
   IPAddress gatewayIP();
   IPAddress dnsServerIP();
   void set_ip(const IPAddress local_ip);
+  void reset();
+  void thread();
+  void touch()
+  {
+    net_tick = millis();
+  }
   friend class EthernetClient;
   friend class EthernetServer;
 };

@@ -89,6 +89,7 @@ __ALIGN_BEGIN uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE] __ALIGN_END; /* Ethe
 __ALIGN_BEGIN uint8_t Tx_Buff[ETH_TXBUFNB][ETH_TX_BUF_SIZE] __ALIGN_END; /* Ethernet Transmit Buffer */
 
 osSemaphoreId s_xSemaphore = NULL;
+osThreadId t_xThread = NULL;
 ETH_HandleTypeDef heth;
 
 /* USER CODE BEGIN 3 */
@@ -251,6 +252,7 @@ void phy_dump()
  * @param netif the already initialized lwip network interface structure
  *        for this ethernetif
  */
+
 static void low_level_init(struct netif *netif)
 {
   // uint32_t regvalue = 0;
@@ -331,7 +333,7 @@ static void low_level_init(struct netif *netif)
   s_xSemaphore = osSemaphoreCreate(osSemaphore(SEM), 1);
 
   osThreadDef(EthIf, ethernetif_input, osPriorityNormal, 0, INTERFACE_THREAD_STACK_SIZE);
-  osThreadCreate(osThread(EthIf), netif);
+  t_xThread = osThreadCreate(osThread(EthIf), netif);
   /* Enable MAC and DMA transmission and reception */
   HAL_ETH_Start(&heth);
 
@@ -361,7 +363,15 @@ static void low_level_init(struct netif *netif)
   // phy_dump();
   /* USER CODE END LOW_LEVEL_INIT */
 }
-
+void stm32_eth_uninit()
+{
+  HAL_ETH_Stop(&heth);
+  eth_reset();
+  if (t_xThread)
+    osThreadTerminate(t_xThread);
+  if (s_xSemaphore)
+    osSemaphoreDelete(s_xSemaphore);
+}
 /**
  * This function should do the actual transmission of the packet. The packet is
  * contained in the pbuf that is passed to the function. This pbuf
