@@ -51,7 +51,7 @@
 #include "mdns.h"
 
 extern const unsigned short build_number;
-extern const char *mdns_name;
+const char *mdns_name = "PAC";
 s8_t mdns_service;
 #ifdef __cplusplus
 extern "C"
