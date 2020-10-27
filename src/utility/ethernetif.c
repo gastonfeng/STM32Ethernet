@@ -1,46 +1,18 @@
 /**
   ******************************************************************************
-  * @file    ethernetif.c
-  * @author  MCD Application Team & Wi6Labs
-  * @version V1.5.0
-  * @date    20-june-2017
-  * @brief   This file implements Ethernet network interface drivers for lwIP
+  * File Name          : ethernetif.c
+  * Description        : This file provides code for the configuration
+  *                      of the ethernetif.c MiddleWare.
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2017 STMicroelectronics International N.V.
+  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
-  * Redistribution and use in source and binary forms, with or without
-  * modification, are permitted, provided that the following conditions are met:
-  *
-  * 1. Redistribution of source code must retain the above copyright notice,
-  *    this list of conditions and the following disclaimer.
-  * 2. Redistributions in binary form must reproduce the above copyright notice,
-  *    this list of conditions and the following disclaimer in the documentation
-  *    and/or other materials provided with the distribution.
-  * 3. Neither the name of STMicroelectronics nor the names of other
-  *    contributors to this software may be used to endorse or promote products
-  *    derived from this software without specific written permission.
-  * 4. This software, including modifications and/or derivative works of this
-  *    software, must execute solely and exclusively on microcontroller or
-  *    microprocessor devices manufactured by or for STMicroelectronics.
-  * 5. Redistribution and use of this software other than as permitted under
-  *    this license is void and will automatically terminate your rights under
-  *    this license.
-  *
-  * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS"
-  * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT
-  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-  * PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY INTELLECTUAL PROPERTY
-  * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT
-  * SHALL STMICROELECTRONICS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-  * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-  * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  * This software component is licensed by ST under Ultimate Liberty license
+  * SLA0044, the "License"; You may not use this file except in compliance with
+  * the License. You may obtain a copy of the License at:
+  *                             www.st.com/SLA0044
   *
   ******************************************************************************
   */
@@ -55,6 +27,7 @@
 #include "stm32_eth.h"
 #include "variant.h"
 #include "core_debug.h"
+#include "lwip/tcpip.h"
 
 /* USER CODE END 0 */
 
@@ -66,7 +39,10 @@
 #define IFNAME0 's'
 #define IFNAME1 't'
 
-/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN 1 */
+
+/* USER CODE END 1 */
+
 /* Private variables ---------------------------------------------------------*/
 #if defined(__ICCARM__) /*!< IAR Compiler */
 #pragma data_alignment = 4
@@ -88,22 +64,21 @@ __ALIGN_BEGIN uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE] __ALIGN_END; /* Ethe
 #endif
 __ALIGN_BEGIN uint8_t Tx_Buff[ETH_TXBUFNB][ETH_TX_BUF_SIZE] __ALIGN_END; /* Ethernet Transmit Buffer */
 
+/* USER CODE BEGIN 2 */
+
+/* USER CODE END 2 */
+
+/* Semaphore to signal incoming packets */
 osSemaphoreId s_xSemaphore = NULL;
 osThreadId t_xThread = NULL;
 ETH_HandleTypeDef heth;
 
 /* USER CODE BEGIN 3 */
 
-/* Private function prototypes -----------------------------------------------*/
+/* USER CODE END 3 */
+
 /* Private functions ---------------------------------------------------------*/
-/*******************************************************************************
-                       Ethernet MSP Routines
-*******************************************************************************/
-/**
-  * @brief  Initializes the ETH MSP.
-  * @param  heth: ETH handle
-  * @retval None
-  */
+
 void HAL_ETH_MspInit(ETH_HandleTypeDef *ethHandle)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -118,7 +93,7 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef *ethHandle)
     __HAL_RCC_GPIOC_CLK_ENABLE();
     __HAL_RCC_GPIOA_CLK_ENABLE();
     __HAL_RCC_GPIOB_CLK_ENABLE();
-    /**ETH GPIO Configuration    
+    /**ETH GPIO Configuration
     PC1     ------> ETH_MDC
     PA1     ------> ETH_REF_CLK
     PA2     ------> ETH_MDIO
@@ -177,8 +152,6 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef *ethHandle)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-    HAL_NVIC_SetPriority(ETH_IRQn, 5, 0);
-    HAL_NVIC_EnableIRQ(ETH_IRQn);
     /* USER CODE BEGIN ETH_MspInit 1 */
 #endif
     HAL_NVIC_SetPriority(ETH_IRQn, 5, 0);
@@ -255,7 +228,7 @@ void phy_dump()
 
 static void low_level_init(struct netif *netif)
 {
-  // uint32_t regvalue = 0;
+  uint32_t regvalue = 0;
   HAL_StatusTypeDef hal_eth_init_status;
 
   /* Init ETH */
@@ -287,10 +260,7 @@ static void low_level_init(struct netif *netif)
   heth.Init.MediaInterface = ETH_MEDIA_INTERFACE_RMII;
 
   /* USER CODE BEGIN MACADDRESS */
-  // HAL_GPIO_WritePin(ETH_RST_GPIO_Port,ETH_RST_Pin,0);
-  // HAL_Delay(200);
-  // HAL_GPIO_WritePin(ETH_RST_GPIO_Port,ETH_RST_Pin,1);
-  // HAL_Delay(200);
+
   /* USER CODE END MACADDRESS */
 
   hal_eth_init_status = HAL_ETH_Init(&heth);
@@ -341,22 +311,20 @@ static void low_level_init(struct netif *netif)
 
   /* USER CODE END PHY_PRE_CONFIG */
 
-  /**** Configure PHY to generate an interrupt when Eth Link state changes ****/
-  // /* Read Register Configuration */
-  // HAL_ETH_ReadPHYRegister(&heth, PHY_MICR, &regvalue);
+  /* Read Register Configuration */
+  HAL_ETH_ReadPHYRegister(&heth, PHY_ISFR, &regvalue);
+  regvalue |= (PHY_ISFR_INT4);
 
-  // regvalue |= (PHY_MICR_INT_EN | PHY_MICR_INT_OE);
+  /* Enable Interrupt on change of link status */
+  HAL_ETH_WritePHYRegister(&heth, PHY_ISFR, regvalue);
 
-  // /* Enable Interrupts */
-  // HAL_ETH_WritePHYRegister(&heth, PHY_MICR, regvalue);
+  /* Read Register Configuration */
+  HAL_ETH_ReadPHYRegister(&heth, PHY_ISFR, &regvalue);
 
-  // /* Read Register Configuration */
-  // HAL_ETH_ReadPHYRegister(&heth, PHY_MISR, &regvalue);
+  /* USER CODE BEGIN PHY_POST_CONFIG */
 
-  // regvalue |= PHY_MISR_LINK_INT_EN;
+  /* USER CODE END PHY_POST_CONFIG */
 
-  // /* Enable Interrupt on change of link status */
-  // HAL_ETH_WritePHYRegister(&heth, PHY_MISR, regvalue);
 #endif /* LWIP_ARP || LWIP_ETHERNET */
 
   /* USER CODE BEGIN LOW_LEVEL_INIT */
@@ -408,7 +376,6 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
     if ((DmaTxDesc->Status & ETH_DMATXDESC_OWN) != (uint32_t)RESET)
     {
       errval = ERR_USE;
-      // core_debug("error %s ,L%d", __FILE__, __LINE__);
       goto error;
     }
 
@@ -573,18 +540,16 @@ void ethernetif_input(void const *argument)
       net_led_on();
       do
       {
+        LOCK_TCPIP_CORE();
         p = low_level_input(netif);
-
-        /* no packet could be read, silently ignore this */
         if (p != NULL)
         {
-          /* entry point to the LwIP stack */
           if (netif->input(p, netif) != ERR_OK)
-
           {
             pbuf_free(p);
           }
         }
+        UNLOCK_TCPIP_CORE();
       } while (p != NULL);
       net_led_off();
     }
@@ -686,13 +651,15 @@ u32_t sys_now(void)
   return HAL_GetTick();
 }
 
+/* USER CODE END 6 */
+
 /**
   * @brief  This function sets the netif link status.
   * @param  netif: the network interface
   * @retval None
   */
-
 void ethernetif_set_link(void const *argument)
+
 {
   uint32_t regvalue = 0;
   struct link_str *link_arg = (struct link_str *)argument;
@@ -712,9 +679,11 @@ void ethernetif_set_link(void const *argument)
     }
     else if (netif_is_link_up(link_arg->netif) && (!regvalue))
     {
-      /* network cable is disconnected */
+      /* network cable is dis-connected */
       netif_set_link_down(link_arg->netif);
     }
+
+    /* Suspend thread for 200 ms */
     osDelay(200);
   }
 }
@@ -727,7 +696,7 @@ void ethernetif_set_link(void const *argument)
 /**
   * @brief  Link callback function, this function is called on change of link status
   *         to update low level driver configuration.
-  * @param  netif: The network interface
+* @param  netif: The network interface
   * @retval None
   */
 void ethernetif_update_config(struct netif *netif)
@@ -811,6 +780,7 @@ void ethernetif_update_config(struct netif *netif)
   ethernetif_notify_conn_changed(netif);
 }
 
+/* USER CODE BEGIN 8 */
 /**
   * @brief  This function notify user about link status changement.
   * @param  netif: the network interface
@@ -818,7 +788,7 @@ void ethernetif_update_config(struct netif *netif)
   */
 __weak void ethernetif_notify_conn_changed(struct netif *netif)
 {
-  /* NOTE : This is function clould be implemented in user file
+  /* NOTE : This is function could be implemented in user file
             when the callback is needed,
   */
 }

@@ -217,12 +217,12 @@ IPAddress EthernetClass::dnsServerIP()
 #include "ethernetif.h"
 void EthernetClass::reset()
 {
-  extern struct netif gnetif;
-  ip4_addr_t ip;
-  ip.addr = uint32_t(local_ip);
-  stm32_eth_uninit();
-  ethernetif_init(&gnetif);
-  netif_set_ipaddr(&gnetif, &ip);
+  // extern struct netif gnetif;
+  // ip4_addr_t ip;
+  // ip.addr = uint32_t(local_ip);
+  // stm32_eth_uninit();
+  // ethernetif_init(&gnetif);
+  // netif_set_ipaddr(&gnetif, &ip);
 }
 void EthernetClass::thread()
 {
@@ -231,7 +231,7 @@ void EthernetClass::thread()
     //网络状态监控
     if ((millis() - net_tick) > 1000)
     {
-      Ethernet.reset();
+      // Ethernet.reset();
       net_tick = millis();
     }
     vTaskDelay(10000);
