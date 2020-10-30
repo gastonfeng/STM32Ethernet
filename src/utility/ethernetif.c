@@ -225,7 +225,12 @@ void phy_dump()
  * @param netif the already initialized lwip network interface structure
  *        for this ethernetif
  */
-
+// #define MAC1 0x40
+// #define MAC2 0x35
+// #define MAC3 0x01
+// #define MAC4 0x39
+// #define MAC5 0x35
+// #define MAC6 0x38
 static void low_level_init(struct netif *netif)
 {
   uint32_t regvalue = 0;
@@ -242,7 +247,7 @@ static void low_level_init(struct netif *netif)
 #else
   uint8_t id[12];
   HAL_GetUID((uint32_t *)id);
-  netif->hwaddr[0] = id[0] & 0xfd;
+  netif->hwaddr[0] = id[0] & 0xfc;
   netif->hwaddr[1] = id[2];
   netif->hwaddr[2] = id[4];
   netif->hwaddr[3] = id[6];
