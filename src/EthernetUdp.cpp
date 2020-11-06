@@ -181,7 +181,7 @@ int EthernetUDP::parsePacket()
 
   // stm32_eth_scheduler();
 
-  if (_udp.data.available > 0)
+  if (_udp.data.p && _udp.data.available > 0)
   {
     _remoteIP = IPAddress(ip_addr_to_u32(&(_udp.ip)));
     _remotePort = _udp.port;

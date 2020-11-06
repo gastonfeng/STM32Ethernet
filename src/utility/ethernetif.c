@@ -545,7 +545,6 @@ void ethernetif_input(void const *argument)
       net_led_on();
       do
       {
-        LOCK_TCPIP_CORE();
         p = low_level_input(netif);
         if (p != NULL)
         {
@@ -554,7 +553,6 @@ void ethernetif_input(void const *argument)
             pbuf_free(p);
           }
         }
-        UNLOCK_TCPIP_CORE();
       } while (p != NULL);
       net_led_off();
     }
