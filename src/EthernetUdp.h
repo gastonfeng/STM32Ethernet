@@ -43,7 +43,7 @@ extern "C" {
 #include "utility/stm32_eth.h"
 }
 
-#define UDP_TX_PACKET_MAX_SIZE 24
+#define UDP_TX_PACKET_MAX_SIZE 1024
 
 class EthernetUDP : public UDP {
 private:
