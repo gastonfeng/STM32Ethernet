@@ -27,7 +27,6 @@
 #include "stm32_eth.h"
 #include "variant.h"
 #include "core_debug.h"
-#include "lwip/tcpip.h"
 
 /* USER CODE END 0 */
 
@@ -225,12 +224,12 @@ void phy_dump()
  * @param netif the already initialized lwip network interface structure
  *        for this ethernetif
  */
-// #define MAC1 0x40
-// #define MAC2 0x35
-// #define MAC3 0x01
-// #define MAC4 0x39
-// #define MAC5 0x35
-// #define MAC6 0x38
+#define MAC1 0
+#define MAC2 0x80
+#define MAC3 0xf4
+#define MAC4 0x3d
+#define MAC5 0x99
+#define MAC6 0xf5
 static void low_level_init(struct netif *netif)
 {
   uint32_t regvalue = 0;
@@ -316,20 +315,22 @@ static void low_level_init(struct netif *netif)
 
   /* USER CODE END PHY_PRE_CONFIG */
 
-  /* Read Register Configuration */
-  HAL_ETH_ReadPHYRegister(&heth, PHY_ISFR, &regvalue);
-  regvalue |= (PHY_ISFR_INT4);
+  /**** Configure PHY to generate an interrupt when Eth Link state changes ****/
+  // /* Read Register Configuration */
+  // HAL_ETH_ReadPHYRegister(&heth, PHY_MICR, &regvalue);
 
-  /* Enable Interrupt on change of link status */
-  HAL_ETH_WritePHYRegister(&heth, PHY_ISFR, regvalue);
+  // regvalue |= (PHY_MICR_INT_EN | PHY_MICR_INT_OE);
 
-  /* Read Register Configuration */
-  HAL_ETH_ReadPHYRegister(&heth, PHY_ISFR, &regvalue);
+  // /* Enable Interrupts */
+  // HAL_ETH_WritePHYRegister(&heth, PHY_MICR, regvalue);
 
-  /* USER CODE BEGIN PHY_POST_CONFIG */
+  // /* Read Register Configuration */
+  // HAL_ETH_ReadPHYRegister(&heth, PHY_MISR, &regvalue);
 
-  /* USER CODE END PHY_POST_CONFIG */
+  // regvalue |= PHY_MISR_LINK_INT_EN;
 
+  // /* Enable Interrupt on change of link status */
+  // HAL_ETH_WritePHYRegister(&heth, PHY_MISR, regvalue);
 #endif /* LWIP_ARP || LWIP_ETHERNET */
 
   /* USER CODE BEGIN LOW_LEVEL_INIT */
