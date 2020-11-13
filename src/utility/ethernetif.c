@@ -224,12 +224,12 @@ void phy_dump()
  * @param netif the already initialized lwip network interface structure
  *        for this ethernetif
  */
-#define MAC1 0
-#define MAC2 0x80
-#define MAC3 0xf4
-#define MAC4 0x3d
-#define MAC5 0x99
-#define MAC6 0xf5
+// #define MAC1 0
+// #define MAC2 0x80
+// #define MAC3 0xf4
+// #define MAC4 0x3d
+// #define MAC5 0x99
+// #define MAC6 0xf5
 static void low_level_init(struct netif *netif)
 {
   uint32_t regvalue = 0;
