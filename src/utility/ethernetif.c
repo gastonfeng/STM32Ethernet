@@ -543,12 +543,12 @@ void ethernetif_input(void const *argument)
   {
     if (osSemaphoreWait(s_xSemaphore, TIME_WAITING_FOR_INPUT) == osOK)
     {
-      net_led_on();
       do
       {
         p = low_level_input(netif);
         if (p != NULL)
         {
+          net_led_on();
           if (netif->input(p, netif) != ERR_OK)
           {
             pbuf_free(p);

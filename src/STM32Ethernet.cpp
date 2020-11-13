@@ -234,7 +234,7 @@ void EthernetClass::thread()
       Ethernet.reset();
       net_tick = millis();
     }
-    vTaskDelay(10000);
+    vTaskDelay(1000);
   }
 }
 EthernetClass Ethernet;
