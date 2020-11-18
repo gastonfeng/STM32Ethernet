@@ -149,7 +149,7 @@ int EthernetUDP::endPacket()
 
   _data = stm32_free_data(_data);
   // stm32_eth_scheduler();
-
+  udp_disconnect(_udp.pcb);   //Bomb:更换端口后不响应
   return 1;
 }
 
