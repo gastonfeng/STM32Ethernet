@@ -19,7 +19,7 @@ int EthernetClass::begin(unsigned long timeout, unsigned long responseTimeout)
   {
     _dnsServerAddress = _dhcp->getDnsServerIp();
   }
-  osThreadDef(EthMon, thread_eth, osPriorityNormal, 0, 128);
+  osThreadDef(EthMon, thread_eth, osPriorityRealtime, 0, 128);
   osThreadCreate(osThread(EthMon), this);
 
   return ret;
@@ -65,7 +65,7 @@ void EthernetClass::begin(IPAddress local_ip, IPAddress subnet, IPAddress gatewa
   stm32_DHCP_manual_config();
 #endif
   _dnsServerAddress = dns_server;
-  osThreadDef(EthMon, thread_eth, osPriorityNormal, 0, 128);
+  osThreadDef(EthMon, thread_eth, osPriorityRealtime, 0, 128);
   osThreadCreate(osThread(EthMon), this);
 }
 #if DHCP
@@ -84,7 +84,7 @@ int EthernetClass::begin(uint8_t *mac_address, unsigned long timeout, unsigned l
     _dnsServerAddress = _dhcp->getDnsServerIp();
   }
   macAddress(mac_address);
-  osThreadDef(EthMon, thread_eth, osPriorityNormal, 0, 128);
+  osThreadDef(EthMon, thread_eth, osPriorityRealtime, 0, 128);
   osThreadCreate(osThread(EthMon), this);
 
   return ret;
@@ -125,7 +125,7 @@ void EthernetClass::begin(uint8_t *mac, IPAddress local_ip, IPAddress dns_server
 #endif
   _dnsServerAddress = dns_server;
   macAddress(mac);
-  osThreadDef(EthMon, thread_eth, osPriorityNormal, 0, 128);
+  osThreadDef(EthMon, thread_eth, osPriorityRealtime, 0, 128);
   osThreadCreate(osThread(EthMon), this);
 }
 
@@ -221,6 +221,7 @@ void EthernetClass::reset()
   ip4_addr_t ip;
   ip.addr = uint32_t(local_ip);
   stm32_eth_uninit();
+  memp_init();
   ethernetif_init(&gnetif);
   netif_set_ipaddr(&gnetif, &ip);
 }
