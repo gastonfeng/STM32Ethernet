@@ -273,7 +273,7 @@ static void low_level_init(struct netif *netif)
   if (hal_eth_init_status == HAL_OK)
   {
     /* Set netif link flag */
-    netif->flags |= NETIF_FLAG_LINK_UP;
+    netif->flags = 0; // NETIF_FLAG_LINK_UP;
   }
   else
   {
@@ -769,11 +769,11 @@ void ethernetif_update_config(struct netif *netif)
       assert_param(IS_ETH_DUPLEX_MODE(heth.Init.DuplexMode));
 
       /* Set MAC Speed and Duplex Mode to PHY */
-      HAL_ETH_WritePHYRegister(&heth, PHY_BCR, ((uint16_t)(heth.Init.DuplexMode >> 3) | (uint16_t)(heth.Init.Speed >> 1)));
+      // HAL_ETH_WritePHYRegister(&heth, PHY_BCR, ((uint16_t)(heth.Init.DuplexMode >> 3) | (uint16_t)(heth.Init.Speed >> 1)));
     }
 
     /* ETHERNET MAC Re-Configuration */
-    HAL_ETH_ConfigMAC(&heth, (ETH_MACInitTypeDef *)NULL);
+    // HAL_ETH_ConfigMAC(&heth, (ETH_MACInitTypeDef *)NULL);
 
     /* Restart MAC interface */
     HAL_ETH_Start(&heth);
