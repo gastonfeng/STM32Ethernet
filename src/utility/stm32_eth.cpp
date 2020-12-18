@@ -269,9 +269,9 @@ static void TIM_scheduler_Config(void)
 #if LWIP_NETIF_HOSTNAME
       mdns_resp_add_netif(&gnetif, gnetif.hostname, 3600);
 #else
-      mdns_resp_add_netif(&gnetif, buf);
+      mdns_resp_add_netif(&gnetif, buf, 3600);
 #endif
-      mdns_service = mdns_resp_add_service(&gnetif, buf, buf1, DNSSD_PROTO_UDP, 80, srv_txt, NULL);
+      mdns_service = mdns_resp_add_service(&gnetif, buf, buf1, DNSSD_PROTO_UDP, 80, 3600, srv_txt, NULL);
 #endif
       initDone = 1;
     }

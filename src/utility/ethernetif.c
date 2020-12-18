@@ -345,7 +345,10 @@ void stm32_eth_uninit()
   if (t_xThread)
     osThreadTerminate(t_xThread);
   if (s_xSemaphore)
+  {
     osSemaphoreDelete(s_xSemaphore);
+    s_xSemaphore = NULL;
+  }
 }
 /**
  * This function should do the actual transmission of the packet. The packet is
