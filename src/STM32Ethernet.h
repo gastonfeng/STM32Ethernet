@@ -12,7 +12,7 @@ class EthernetClass
 private:
   IPAddress _dnsServerAddress;
   IPAddress local_ip;
-  uint32_t net_tick;
+  uint32_t net_tick,rstCount;
 #if DHCP
   DhcpClass *_dhcp;
 #endif
@@ -55,6 +55,7 @@ public:
   void touch()
   {
     net_tick = millis();
+    rstCount=0;
   }
   friend class EthernetClient;
   friend class EthernetServer;

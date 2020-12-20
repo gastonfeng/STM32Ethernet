@@ -1,11 +1,12 @@
 #include "STM32Ethernet.h"
 #include "Dhcp.h"
 #include <STM32FreeRTOS.h>
-void thread_eth(void const *arg)
-{
-  EthernetClass *eth = (EthernetClass *)arg;
-  eth->thread();
+
+void thread_eth(void const *arg) {
+    EthernetClass *eth = (EthernetClass *) arg;
+    eth->thread();
 }
+
 #if DHCP
 int EthernetClass::begin(unsigned long timeout, unsigned long responseTimeout)
 {
@@ -25,49 +26,48 @@ int EthernetClass::begin(unsigned long timeout, unsigned long responseTimeout)
   return ret;
 }
 #endif
-void EthernetClass::begin(IPAddress local_ip)
-{
-  IPAddress subnet(255, 255, 255, 0);
-  begin(local_ip, subnet);
+
+void EthernetClass::begin(IPAddress local_ip) {
+    IPAddress subnet(255, 255, 255, 0);
+    begin(local_ip, subnet);
 }
 
-void EthernetClass::begin(IPAddress local_ip, IPAddress subnet)
-{
-  // Assume the gateway will be the machine on the same network as the local IP
-  // but with last octet being '1'
-  IPAddress gateway = local_ip;
-  gateway[3] = 1;
-  begin(local_ip, subnet, gateway);
+void EthernetClass::begin(IPAddress local_ip, IPAddress subnet) {
+    // Assume the gateway will be the machine on the same network as the local IP
+    // but with last octet being '1'
+    IPAddress gateway = local_ip;
+    gateway[3] = 1;
+    begin(local_ip, subnet, gateway);
 }
 
-void EthernetClass::begin(IPAddress local_ip, IPAddress subnet, IPAddress gateway)
-{
-  // Assume the DNS server will be the machine on the same network as the local IP
-  // but with last octet being '1'
-  IPAddress dns_server = local_ip;
-  dns_server[3] = 1;
-  begin(local_ip, subnet, gateway, dns_server);
+void EthernetClass::begin(IPAddress local_ip, IPAddress subnet, IPAddress gateway) {
+    // Assume the DNS server will be the machine on the same network as the local IP
+    // but with last octet being '1'
+    IPAddress dns_server = local_ip;
+    dns_server[3] = 1;
+    begin(local_ip, subnet, gateway, dns_server);
 }
-void EthernetClass::set_ip(const IPAddress local_ip)
-{
-  extern struct netif gnetif;
-  ip4_addr_t ip;
-  ip.addr = uint32_t(local_ip);
-  netif_set_ipaddr(&gnetif, &ip);
+
+void EthernetClass::set_ip(const IPAddress local_ip) {
+    extern struct netif gnetif;
+    ip4_addr_t ip;
+    ip.addr = uint32_t(local_ip);
+    netif_set_ipaddr(&gnetif, &ip);
 }
-void EthernetClass::begin(IPAddress local_ip, IPAddress subnet, IPAddress gateway, IPAddress dns_server)
-{
-  this->local_ip = local_ip;
-  stm32_eth_init(macAddressDefault(), local_ip.raw_address(), gateway.raw_address(), subnet.raw_address());
-  /* If there is a local DHCP informs it of our manual IP configuration to
-  prevent IP conflict */
+
+void EthernetClass::begin(IPAddress local_ip, IPAddress subnet, IPAddress gateway, IPAddress dns_server) {
+    this->local_ip = local_ip;
+    stm32_eth_init(macAddressDefault(), local_ip.raw_address(), gateway.raw_address(), subnet.raw_address());
+    /* If there is a local DHCP informs it of our manual IP configuration to
+    prevent IP conflict */
 #if DHCP
-  stm32_DHCP_manual_config();
+    stm32_DHCP_manual_config();
 #endif
-  _dnsServerAddress = dns_server;
-  osThreadDef(EthMon, thread_eth, osPriorityNormal, 0, 128);
-  osThreadCreate(osThread(EthMon), this);
+    _dnsServerAddress = dns_server;
+    osThreadDef(EthMon, thread_eth, osPriorityNormal, 0, 128);
+    osThreadCreate(osThread(EthMon), this);
 }
+
 #if DHCP
 int EthernetClass::begin(uint8_t *mac_address, unsigned long timeout, unsigned long responseTimeout)
 {
@@ -90,152 +90,147 @@ int EthernetClass::begin(uint8_t *mac_address, unsigned long timeout, unsigned l
   return ret;
 }
 #endif
-void EthernetClass::begin(uint8_t *mac_address, IPAddress local_ip)
-{
-  // Assume the DNS server will be the machine on the same network as the local IP
-  // but with last octet being '1'
-  IPAddress dns_server = local_ip;
-  dns_server[3] = 1;
-  begin(mac_address, local_ip, dns_server);
+
+void EthernetClass::begin(uint8_t *mac_address, IPAddress local_ip) {
+    // Assume the DNS server will be the machine on the same network as the local IP
+    // but with last octet being '1'
+    IPAddress dns_server = local_ip;
+    dns_server[3] = 1;
+    begin(mac_address, local_ip, dns_server);
 }
 
-void EthernetClass::begin(uint8_t *mac_address, IPAddress local_ip, IPAddress dns_server)
-{
-  // Assume the gateway will be the machine on the same network as the local IP
-  // but with last octet being '1'
-  IPAddress gateway = local_ip;
-  gateway[3] = 1;
-  begin(mac_address, local_ip, dns_server, gateway);
+void EthernetClass::begin(uint8_t *mac_address, IPAddress local_ip, IPAddress dns_server) {
+    // Assume the gateway will be the machine on the same network as the local IP
+    // but with last octet being '1'
+    IPAddress gateway = local_ip;
+    gateway[3] = 1;
+    begin(mac_address, local_ip, dns_server, gateway);
 }
 
-void EthernetClass::begin(uint8_t *mac_address, IPAddress local_ip, IPAddress dns_server, IPAddress gateway)
-{
-  IPAddress subnet(255, 255, 255, 0);
-  begin(mac_address, local_ip, dns_server, gateway, subnet);
+void EthernetClass::begin(uint8_t *mac_address, IPAddress local_ip, IPAddress dns_server, IPAddress gateway) {
+    IPAddress subnet(255, 255, 255, 0);
+    begin(mac_address, local_ip, dns_server, gateway, subnet);
 }
 
-void EthernetClass::begin(uint8_t *mac, IPAddress local_ip, IPAddress dns_server, IPAddress gateway, IPAddress subnet)
-{
-  this->local_ip = local_ip;
-  stm32_eth_init(mac, local_ip.raw_address(), gateway.raw_address(), subnet.raw_address());
+void EthernetClass::begin(uint8_t *mac, IPAddress local_ip, IPAddress dns_server, IPAddress gateway, IPAddress subnet) {
+    this->local_ip = local_ip;
+    stm32_eth_init(mac, local_ip.raw_address(), gateway.raw_address(), subnet.raw_address());
 /* If there is a local DHCP informs it of our manual IP configuration to
   prevent IP conflict */
 #if DHCP
-  stm32_DHCP_manual_config();
+    stm32_DHCP_manual_config();
 #endif
-  _dnsServerAddress = dns_server;
-  macAddress(mac);
-  osThreadDef(EthMon, thread_eth, osPriorityNormal, 0, 128);
-  osThreadCreate(osThread(EthMon), this);
+    _dnsServerAddress = dns_server;
+    macAddress(mac);
+    osThreadDef(EthMon, thread_eth, osPriorityNormal, 0, 128);
+    osThreadCreate(osThread(EthMon), this);
 }
 
-int EthernetClass::maintain()
-{
+int EthernetClass::maintain() {
 #if DHCP
-  int rc = DHCP_CHECK_NONE;
+    int rc = DHCP_CHECK_NONE;
 
-  if (_dhcp != NULL)
-  {
-    //we have a pointer to dhcp, use it
-    rc = _dhcp->checkLease();
-    switch (rc)
+    if (_dhcp != NULL)
     {
-    case DHCP_CHECK_NONE:
-      //nothing done
-      break;
-    case DHCP_CHECK_RENEW_OK:
-    case DHCP_CHECK_REBIND_OK:
-      _dnsServerAddress = _dhcp->getDnsServerIp();
-      break;
-    default:
-      //this is actually a error, it will retry though
-      break;
+      //we have a pointer to dhcp, use it
+      rc = _dhcp->checkLease();
+      switch (rc)
+      {
+      case DHCP_CHECK_NONE:
+        //nothing done
+        break;
+      case DHCP_CHECK_RENEW_OK:
+      case DHCP_CHECK_REBIND_OK:
+        _dnsServerAddress = _dhcp->getDnsServerIp();
+        break;
+      default:
+        //this is actually a error, it will retry though
+        break;
+      }
     }
-  }
-  return rc;
+    return rc;
 #endif
 }
+
 extern "C" void stm32_eth_scheduler();
+
 /*
  * This function updates the LwIP stack and can be called to be sure to update
  * the stack (e.g. in case of a long loop).
  */
-void EthernetClass::schedule(void)
-{
-  stm32_eth_scheduler();
+void EthernetClass::schedule(void) {
+    stm32_eth_scheduler();
 }
 
-uint8_t *EthernetClass::macAddressDefault(void)
-{
-  if ((mac_address[0] + mac_address[1] + mac_address[2] + mac_address[3] + mac_address[4] + mac_address[5]) == 0)
-  {
-    uint32_t baseUID = *(uint32_t *)UID_BASE;
-    mac_address[0] = 0x00;
-    mac_address[1] = 0x80;
-    mac_address[2] = 0xE1;
-    mac_address[3] = (baseUID & 0x00FF0000) >> 16;
-    mac_address[4] = (baseUID & 0x0000FF00) >> 8;
-    mac_address[5] = (baseUID & 0x000000FF);
-  }
-  return mac_address;
-}
-
-void EthernetClass::macAddress(uint8_t *mac)
-{
-  mac_address[0] = mac[0];
-  mac_address[1] = mac[1];
-  mac_address[2] = mac[2];
-  mac_address[3] = mac[3];
-  mac_address[4] = mac[4];
-  mac_address[5] = mac[5];
-}
-
-uint8_t *EthernetClass::macAddress(void)
-{
-  return mac_address;
-}
-
-IPAddress EthernetClass::localIP()
-{
-  return IPAddress(stm32_eth_get_ipaddr());
-}
-
-IPAddress EthernetClass::subnetMask()
-{
-  return IPAddress(stm32_eth_get_netmaskaddr());
-}
-
-IPAddress EthernetClass::gatewayIP()
-{
-  return IPAddress(stm32_eth_get_gwaddr());
-}
-
-IPAddress EthernetClass::dnsServerIP()
-{
-  return _dnsServerAddress;
-}
-#include "ethernetif.h"
-void EthernetClass::reset()
-{
-  extern struct netif gnetif;
-  ip4_addr_t ip;
-  ip.addr = uint32_t(local_ip);
-  stm32_eth_uninit();
-//  memp_init();
-  ethernetif_init(&gnetif);
-  netif_set_ipaddr(&gnetif, &ip);
-}
-void EthernetClass::thread()
-{
-  while (1)
-  {
-    //网络状态监控
-    if ((millis() - net_tick) > 10000)
-    {
-      Ethernet.reset();
-      net_tick = millis();
+uint8_t *EthernetClass::macAddressDefault(void) {
+    if ((mac_address[0] + mac_address[1] + mac_address[2] + mac_address[3] + mac_address[4] + mac_address[5]) == 0) {
+        uint32_t baseUID = *(uint32_t *) UID_BASE;
+        mac_address[0] = 0x00;
+        mac_address[1] = 0x80;
+        mac_address[2] = 0xE1;
+        mac_address[3] = (baseUID & 0x00FF0000) >> 16;
+        mac_address[4] = (baseUID & 0x0000FF00) >> 8;
+        mac_address[5] = (baseUID & 0x000000FF);
     }
-    vTaskDelay(1000);
-  }
+    return mac_address;
 }
+
+void EthernetClass::macAddress(uint8_t *mac) {
+    mac_address[0] = mac[0];
+    mac_address[1] = mac[1];
+    mac_address[2] = mac[2];
+    mac_address[3] = mac[3];
+    mac_address[4] = mac[4];
+    mac_address[5] = mac[5];
+}
+
+uint8_t *EthernetClass::macAddress(void) {
+    return mac_address;
+}
+
+IPAddress EthernetClass::localIP() {
+    return IPAddress(stm32_eth_get_ipaddr());
+}
+
+IPAddress EthernetClass::subnetMask() {
+    return IPAddress(stm32_eth_get_netmaskaddr());
+}
+
+IPAddress EthernetClass::gatewayIP() {
+    return IPAddress(stm32_eth_get_gwaddr());
+}
+
+IPAddress EthernetClass::dnsServerIP() {
+    return _dnsServerAddress;
+}
+
+#include "ethernetif.h"
+void setReboot();
+void EthernetClass::reset() {
+#ifndef CORE_DEBUG
+    if (rstCount++ > 10) {
+        setReboot();
+    }
+#endif
+    extern struct netif gnetif;
+    ip4_addr_t ip;
+    ip.addr = uint32_t(local_ip);
+    stm32_eth_uninit();
+//  memp_init();
+    ethernetif_init(&gnetif);
+    netif_set_ipaddr(&gnetif, &ip);
+}
+
+void EthernetClass::thread() {
+    rstCount = 0;
+    while (1) {
+        //网络状态监控
+        if ((millis() - net_tick) > 10000) {
+            Ethernet.reset();
+            net_tick = millis();
+        }
+        vTaskDelay(1000);
+    }
+}
+
 EthernetClass Ethernet;
