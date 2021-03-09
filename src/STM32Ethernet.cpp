@@ -226,7 +226,7 @@ void EthernetClass::thread() {
     while (1) {
         //网络状态监控
         if ((millis() - net_tick) > 10000) {
-            Ethernet.reset();
+            // Ethernet.reset();
             net_tick = millis();
         }
         vTaskDelay(1000);

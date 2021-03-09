@@ -154,7 +154,7 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef *ethHandle) {
         __HAL_RCC_GPIOA_CLK_ENABLE();
         /**ETH GPIO Configuration
         PG11     ------> ETH_TX_EN
-        PG12     ------> ETH_TXD1
+        PG14     ------> ETH_TXD1
         PG13     ------> ETH_TXD0
         PC1     ------> ETH_MDC
         PA2     ------> ETH_MDIO
@@ -163,24 +163,24 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef *ethHandle) {
         PC4     ------> ETH_RXD0
         PC5     ------> ETH_RXD1
         */
-        GPIO_InitStruct.Pin = GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13;
+        GPIO_InitStruct.Pin = GPIO_PIN_11 | GPIO_PIN_14 | GPIO_PIN_13;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
         GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
         HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
         GPIO_InitStruct.Pin = GPIO_PIN_1 | GPIO_PIN_4 | GPIO_PIN_5;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
         GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
         GPIO_InitStruct.Pin = GPIO_PIN_2 | GPIO_PIN_1 | GPIO_PIN_7;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
         GPIO_InitStruct.Alternate = GPIO_AF11_ETH;
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
@@ -202,7 +202,7 @@ void HAL_ETH_MspDeInit(ETH_HandleTypeDef *ethHandle) {
 
         /**ETH GPIO Configuration
         PG11     ------> ETH_TX_EN
-        PG12     ------> ETH_TXD1
+        PG14     ------> ETH_TXD1
         PG13     ------> ETH_TXD0
         PC1     ------> ETH_MDC
         PA2     ------> ETH_MDIO
@@ -211,7 +211,7 @@ void HAL_ETH_MspDeInit(ETH_HandleTypeDef *ethHandle) {
         PC4     ------> ETH_RXD0
         PC5     ------> ETH_RXD1
         */
-        HAL_GPIO_DeInit(GPIOG, GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13);
+        HAL_GPIO_DeInit(GPIOG, GPIO_PIN_11 | GPIO_PIN_14 | GPIO_PIN_13);
 
         HAL_GPIO_DeInit(GPIOC, GPIO_PIN_1 | GPIO_PIN_4 | GPIO_PIN_5);
 
@@ -303,9 +303,9 @@ static void low_level_init(struct netif *netif) {
     /* Accept broadcast address and ARP traffic */
     /* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
 #if LWIP_ARP
-      netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP;
+  netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP;
 #else
-      netif->flags |= NETIF_FLAG_BROADCAST;
+  netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_IGMP;
 #endif /* LWIP_ARP */
 
     for(idx = 0; idx < ETH_RX_DESC_CNT; idx ++)
@@ -436,6 +436,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
     TxConfig.Length = framelen;
     TxConfig.TxBuffer = Txbuffer;
 
+    SCB_CleanInvalidateDCache();    //
     HAL_ETH_Transmit(&heth, &TxConfig, ETH_DMA_TRANSMIT_TIMEOUT);
 
     return errval;
@@ -454,7 +455,7 @@ static struct pbuf *low_level_input(struct netif *netif) {
     ETH_BufferTypeDef RxBuff;
     uint32_t framelength = 0;
     struct pbuf_custom *custom_pbuf;
-
+    SCB_CleanInvalidateDCache();
     if (HAL_ETH_GetRxDataBuffer(&heth, &RxBuff) == HAL_OK) {
         HAL_ETH_GetRxDataLength(&heth, &framelength);
 
@@ -805,6 +806,16 @@ void stm32_eth_uninit() {
 //    osSemaphoreDelete(s_xSemaphore);
 //    s_xSemaphore = NULL;
 //  }
+}
+
+void ETH_IRQHandler(void) {
+    /* USER CODE BEGIN ETH_IRQn 0 */
+
+    /* USER CODE END ETH_IRQn 0 */
+    HAL_ETH_IRQHandler(&heth);
+    /* USER CODE BEGIN ETH_IRQn 1 */
+
+    /* USER CODE END ETH_IRQn 1 */
 }
 /* USER CODE END 8 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
