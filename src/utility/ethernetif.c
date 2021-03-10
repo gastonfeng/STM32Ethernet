@@ -186,6 +186,8 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef *ethHandle) {
 
         /* USER CODE BEGIN ETH_MspInit 1 */
 
+        HAL_NVIC_SetPriority(ETH_IRQn, 5, 0);
+        HAL_NVIC_EnableIRQ(ETH_IRQn);
         /* USER CODE END ETH_MspInit 1 */
     }
 }
@@ -436,7 +438,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
     TxConfig.Length = framelen;
     TxConfig.TxBuffer = Txbuffer;
 
-    SCB_CleanInvalidateDCache();    //
+    SCB_CleanInvalidateDCache();    //无效化并清除Dcache
     HAL_ETH_Transmit(&heth, &TxConfig, ETH_DMA_TRANSMIT_TIMEOUT);
 
     return errval;
@@ -455,7 +457,7 @@ static struct pbuf *low_level_input(struct netif *netif) {
     ETH_BufferTypeDef RxBuff;
     uint32_t framelength = 0;
     struct pbuf_custom *custom_pbuf;
-    SCB_CleanInvalidateDCache();
+    SCB_CleanInvalidateDCache();    //无效化并且清除Dcache
     if (HAL_ETH_GetRxDataBuffer(&heth, &RxBuff) == HAL_OK) {
         HAL_ETH_GetRxDataLength(&heth, &framelength);
 
