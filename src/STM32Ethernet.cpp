@@ -184,20 +184,20 @@ void EthernetClass::macAddress(uint8_t *mac) {
     mac_address[5] = mac[5];
 }
 
-uint8_t *EthernetClass::macAddress(void) {
+uint8_t *EthernetClass::macAddress() {
     return mac_address;
 }
 
 IPAddress EthernetClass::localIP() {
-    return IPAddress(stm32_eth_get_ipaddr());
+    return {stm32_eth_get_ipaddr()};
 }
 
 IPAddress EthernetClass::subnetMask() {
-    return IPAddress(stm32_eth_get_netmaskaddr());
+    return {stm32_eth_get_netmaskaddr()};
 }
 
 IPAddress EthernetClass::gatewayIP() {
-    return IPAddress(stm32_eth_get_gwaddr());
+    return {stm32_eth_get_gwaddr()};
 }
 
 IPAddress EthernetClass::dnsServerIP() {
@@ -205,14 +205,18 @@ IPAddress EthernetClass::dnsServerIP() {
 }
 
 #include "ethernetif.h"
+
+extern struct netif gnetif;
+
 void setReboot();
+
 void EthernetClass::reset() {
 #ifndef CORE_DEBUG
     if (rstCount++ > 10) {
         setReboot();
     }
 #endif
-    extern struct netif gnetif;
+
     ip4_addr_t ip;
     ip.addr = uint32_t(local_ip);
     stm32_eth_uninit();
@@ -221,9 +225,9 @@ void EthernetClass::reset() {
     netif_set_ipaddr(&gnetif, &ip);
 }
 
-void EthernetClass::thread() {
+[[noreturn]] void EthernetClass::thread() {
     rstCount = 0;
-    while (1) {
+    while (true) {
         //网络状态监控
         if ((millis() - net_tick) > 10000) {
             // Ethernet.reset();
@@ -233,4 +237,38 @@ void EthernetClass::thread() {
     }
 }
 
-EthernetClass Ethernet;
+extern ETH_HandleTypeDef heth;
+
+int EthernetClass::diag() {
+    bool IsRxDataAvailable = HAL_ETH_IsRxDataAvailable(&heth);
+    if (__HAL_RCC_ETH1MAC_IS_CLK_DISABLED() || __HAL_RCC_ETH1TX_IS_CLK_DISABLED() ||
+        __HAL_RCC_ETH1RX_IS_CLK_DISABLED()) {
+        core_debug("ETH clk not configed!\n");
+    }
+    if (__HAL_RCC_ETH1MAC_IS_CLK_SLEEP_DISABLED() || __HAL_RCC_ETH1TX_IS_CLK_SLEEP_DISABLED() ||
+        __HAL_RCC_ETH1RX_IS_CLK_SLEEP_DISABLED()) {
+        core_debug("ETH SLEEP clk not configed!\n");
+    }
+#if defined(DUAL_CORE)
+    if(__HAL_RCC_C1_ETH1MAC_CLK_DISABLE()||__HAL_RCC_C1_ETH1TX_CLK_DISABLE()||__HAL_RCC_C1_ETH1RX_CLK_DISABLE()){
+        core_debug("ETH clk not configed!\n");
+    }
+    if(__HAL_RCC_C2_ETH1MAC_CLK_DISABLE()||__HAL_RCC_C2_ETH1TX_CLK_DISABLE()||__HAL_RCC_C2_ETH1RX_CLK_DISABLE()){
+        core_debug("ETH clk not configed!\n");
+    }
+    if(__HAL_RCC_C2_ETH1MAC_CLK_SLEEP_DISABLE()||__HAL_RCC_C2_ETH1TX_CLK_SLEEP_DISABLE()||__HAL_RCC_C2_ETH1RX_CLK_SLEEP_DISABLE()){
+        core_debug("ETH clk not configed!\n");
+    }
+#endif
+    uint32_t State = HAL_ETH_GetState(&heth);
+    uint32_t Error = HAL_ETH_GetError(&heth);
+    uint32_t DMAError = HAL_ETH_GetDMAError(&heth);
+    uint32_t MACError = HAL_ETH_GetMACError(&heth);
+    if ((State > HAL_ETH_STATE_ERROR) || Error || DMAError || MACError) {
+        core_debug("ETH ERROR:State=0x%xError=0x%x,DMAError=0x%x,MACError=0x%x\n", State, Error, DMAError, MACError);
+        return -1;
+    }
+    //@todo MPU保护检查
+    return 0;
+}
+
