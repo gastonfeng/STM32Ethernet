@@ -240,6 +240,7 @@ void EthernetClass::reset() {
 extern ETH_HandleTypeDef heth;
 
 int EthernetClass::diag() {
+#ifdef STM32H750xx
     bool IsRxDataAvailable = HAL_ETH_IsRxDataAvailable(&heth);
     if (__HAL_RCC_ETH1MAC_IS_CLK_DISABLED() || __HAL_RCC_ETH1TX_IS_CLK_DISABLED() ||
         __HAL_RCC_ETH1RX_IS_CLK_DISABLED()) {
@@ -249,6 +250,7 @@ int EthernetClass::diag() {
         __HAL_RCC_ETH1RX_IS_CLK_SLEEP_DISABLED()) {
         core_debug("ETH SLEEP clk not configed!\n");
     }
+#endif
 #if defined(DUAL_CORE)
     if(__HAL_RCC_C1_ETH1MAC_CLK_DISABLE()||__HAL_RCC_C1_ETH1TX_CLK_DISABLE()||__HAL_RCC_C1_ETH1RX_CLK_DISABLE()){
         core_debug("ETH clk not configed!\n");
@@ -260,7 +262,9 @@ int EthernetClass::diag() {
         core_debug("ETH clk not configed!\n");
     }
 #endif
+
     uint32_t State = HAL_ETH_GetState(&heth);
+#ifdef STM32H750xx
     uint32_t Error = HAL_ETH_GetError(&heth);
     uint32_t DMAError = HAL_ETH_GetDMAError(&heth);
     uint32_t MACError = HAL_ETH_GetMACError(&heth);
@@ -268,6 +272,7 @@ int EthernetClass::diag() {
         core_debug("ETH ERROR:State=0x%xError=0x%x,DMAError=0x%x,MACError=0x%x\n", State, Error, DMAError, MACError);
         return -1;
     }
+#endif
     //@todo MPU保护检查
     return 0;
 }
