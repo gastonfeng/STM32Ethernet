@@ -238,28 +238,28 @@ void EthernetClass::reset() {
 }
 
 extern ETH_HandleTypeDef heth;
-
+#include"logger.h"
 int EthernetClass::diag() {
 #ifdef STM32H750xx
     bool IsRxDataAvailable = HAL_ETH_IsRxDataAvailable(&heth);
     if (__HAL_RCC_ETH1MAC_IS_CLK_DISABLED() || __HAL_RCC_ETH1TX_IS_CLK_DISABLED() ||
         __HAL_RCC_ETH1RX_IS_CLK_DISABLED()) {
-        core_debug("ETH clk not configed!\n");
+        logger.error("ETH clk not configed!\n");
     }
     if (__HAL_RCC_ETH1MAC_IS_CLK_SLEEP_DISABLED() || __HAL_RCC_ETH1TX_IS_CLK_SLEEP_DISABLED() ||
         __HAL_RCC_ETH1RX_IS_CLK_SLEEP_DISABLED()) {
-        core_debug("ETH SLEEP clk not configed!\n");
+        logger.error("ETH SLEEP clk not configed!\n");
     }
 #endif
 #if defined(DUAL_CORE)
     if(__HAL_RCC_C1_ETH1MAC_CLK_DISABLE()||__HAL_RCC_C1_ETH1TX_CLK_DISABLE()||__HAL_RCC_C1_ETH1RX_CLK_DISABLE()){
-        core_debug("ETH clk not configed!\n");
+        logger.error("ETH clk not configed!\n");
     }
     if(__HAL_RCC_C2_ETH1MAC_CLK_DISABLE()||__HAL_RCC_C2_ETH1TX_CLK_DISABLE()||__HAL_RCC_C2_ETH1RX_CLK_DISABLE()){
-        core_debug("ETH clk not configed!\n");
+        logger.error("ETH clk not configed!\n");
     }
     if(__HAL_RCC_C2_ETH1MAC_CLK_SLEEP_DISABLE()||__HAL_RCC_C2_ETH1TX_CLK_SLEEP_DISABLE()||__HAL_RCC_C2_ETH1RX_CLK_SLEEP_DISABLE()){
-        core_debug("ETH clk not configed!\n");
+        logger.error("ETH clk not configed!\n");
     }
 #endif
 
@@ -269,7 +269,7 @@ int EthernetClass::diag() {
     uint32_t DMAError = HAL_ETH_GetDMAError(&heth);
     uint32_t MACError = HAL_ETH_GetMACError(&heth);
     if ((State > HAL_ETH_STATE_ERROR) || Error || DMAError || MACError) {
-        core_debug("ETH ERROR:State=0x%xError=0x%x,DMAError=0x%x,MACError=0x%x\n", State, Error, DMAError, MACError);
+        logger.error("ETH ERROR:State=0x%xError=0x%x,DMAError=0x%x,MACError=0x%x\n", State, Error, DMAError, MACError);
         return -1;
     }
 #endif

@@ -6,9 +6,9 @@
 #include "EthernetClient.h"
 #include "EthernetServer.h"
 #include "Dhcp.h"
-#include"module.h"
+#include"smodule.h"
 
-class EthernetClass : public module {
+class EthernetClass : public smodule {
 private:
     IPAddress _dnsServerAddress;
     IPAddress local_ip;
