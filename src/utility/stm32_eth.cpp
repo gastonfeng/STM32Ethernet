@@ -52,7 +52,7 @@
 
 extern const unsigned short build_number;
 const char *mdns_name = "PAC";
-s8_t mdns_service;
+
 extern "C"
 {
 
@@ -119,13 +119,8 @@ void iperf_server_socket_init();
 void iperf_server_netconn_init();
 void iperf_client_socket_init();
 void iperf_client_netconn_init();
+const char *protocol = "protocol=FIRMATA";
 
-void srv_txt(struct mdns_service *service, void *txt_userdata) {
-    uint8_t res = 0;
-    res = mdns_resp_add_service_txtitem(service, mdns_name, strlen(mdns_name));
-    LWIP_ERROR("mdns add sevice txt failed.", res == ERR_OK,
-               return);
-}
 /**
 * @brief  Configurates the network interface
 * @param  None
@@ -251,15 +246,11 @@ void stm32_eth_init(const uint8_t *mac, const uint8_t *ip, const uint8_t *gw, co
         // TIM_scheduler_Config();
 #if LWIP_MDNS_RESPONDER
         mdns_resp_init();
-        char buf[MDNS_LABEL_MAXLEN], buf1[16];
-        snprintf(buf, MDNS_LABEL_MAXLEN, "PLC-%d-%d", build_number, ip[3]);
-        snprintf(buf1, 16, "_%s", mdns_name);
 #if LWIP_NETIF_HOSTNAME
         mdns_resp_add_netif(&gnetif, gnetif.hostname, 3600);
 #else
-        mdns_resp_add_netif(&gnetif, buf, 3600);
+        mdns_resp_add_netif(&gnetif, HWMODEL, 3600);
 #endif
-        mdns_service = mdns_resp_add_service(&gnetif, buf, buf1, DNSSD_PROTO_UDP, 80, 3600, srv_txt, NULL);
 #endif
         initDone = 1;
     }
@@ -1024,9 +1015,7 @@ void tcp_connection_close(struct tcp_pcb *tpcb, struct tcp_struct *tcp) {
     tcp->state = TCP_CLOSING;
 }
 
-void set_mdns(const char *name) {
-    mdns_resp_rename_service(&gnetif, mdns_service, name);
-}
+
 #endif /* LWIP_TCP */
 
 }

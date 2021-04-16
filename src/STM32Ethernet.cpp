@@ -1,6 +1,7 @@
 #include "STM32Ethernet.h"
 #include "Dhcp.h"
 #include <STM32FreeRTOS.h>
+#include "lwip/apps/mdns.h"
 
 void thread_eth(void const *arg) {
     EthernetClass *eth = (EthernetClass *) arg;
@@ -238,7 +239,9 @@ void EthernetClass::reset() {
 }
 
 extern ETH_HandleTypeDef heth;
+
 #include"logger.h"
+
 int EthernetClass::diag() {
 #ifdef STM32H750xx
     bool IsRxDataAvailable = HAL_ETH_IsRxDataAvailable(&heth);
@@ -275,6 +278,18 @@ int EthernetClass::diag() {
 #endif
     //@todo MPU保护检查
     return 0;
+}
+
+void srv_txt(struct mdns_service *service, void *txt_userdata) {
+    uint8_t res = 0;
+    res = mdns_resp_add_service_txtitem(service, (const char *) txt_userdata, strlen((char *) txt_userdata));
+    LWIP_ERROR("mdns add sevice txt failed.", res == ERR_OK,
+               return);
+}
+
+void EthernetClass::add_mdns(const char *service, int port, void *text) {
+
+    mdns_resp_add_service(&gnetif, service, "_PAC", DNSSD_PROTO_UDP, port, 3600, srv_txt, text);
 }
 
 EthernetClass Ethernet;
