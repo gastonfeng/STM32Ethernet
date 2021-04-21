@@ -148,55 +148,7 @@ static void Netif_Config(void) {
 #endif /* LWIP_NETIF_LINK_CALLBACK */
 }
 
-/**
-* @brief  Scheduler callback. Call by a timer interrupt.
-* @param  htim: pointer to stimer_t
-* @retval None
-*/
-// #if !defined(STM32_CORE_VERSION) || (STM32_CORE_VERSION <= 0x01060100)
-//   static void scheduler_callback(stimer_t *htim)
-// #else
-// static void scheduler_callback(HardwareTimer *htim)
-// #endif
-//   {
-//     UNUSED(htim);
-//     stm32_eth_scheduler();
-//   }
 
-#if 1 //!defined(STM32_CORE_VERSION) || (STM32_CORE_VERSION <= 0x01060100)
-/**
-* @brief  Enable the timer used to call ethernet scheduler function at regular
-*         interval.
-* @param  None
-* @retval None
-*/
-// static void TIM_scheduler_Config(void)
-// {
-//   /* Set TIMx instance. */
-//   TimHandle.timer = DEFAULT_ETHERNET_TIMER;
-//   /* Timer set to 1ms */
-//   TimerHandleInit(&TimHandle, (uint16_t)(1000 - 1), ((uint32_t)(getTimerClkFreq(DEFAULT_ETHERNET_TIMER) / (1000000)) - 1));
-//   attachIntHandle(&TimHandle, scheduler_callback);
-// }
-#else
-/**
-* @brief  Enable the timer used to call ethernet scheduler function at regular
-*         interval.
-* @param  None
-MDNS_LABEL_MAXLEN* @retval None
-*/
-static void TIM_scheduler_Config(void)
-{
-  /* Configure HardwareTimer */
-  HardwareTimer *EthTim = new HardwareTimer(DEFAULT_ETHERNET_TIMER);
-  EthTim->setMode(1, TIMER_OUTPUT_COMPARE);
-
-  /* Timer set to 1ms */
-  EthTim->setOverflow(1000, MICROSEC_FORMAT);
-  EthTim->attachInterrupt(scheduler_callback);
-  EthTim->resume();
-}
-#endif
 void stm32_eth_init(const uint8_t *mac, const uint8_t *ip, const uint8_t *gw, const uint8_t *netmask) {
     static uint8_t initDone = 0;
 
@@ -265,7 +217,7 @@ void stm32_eth_init(const uint8_t *mac, const uint8_t *ip, const uint8_t *gw, co
     link_arg.semaphore = Netif_LinkSemaphore;
     /* Create the Ethernet link handler thread */
     osThreadDef(LinkThr, ethernetif_set_link, osPriorityNormal, 0, 256);
-    osThreadCreate(osThread(LinkThr), &link_arg);
+    osThreadCreate(osThread(LinkThr), &gnetif);
 #ifdef CORE_DEBUG
     iperf_server_socket_init();
     iperf_server_netconn_init();
@@ -426,13 +378,13 @@ void stm32_set_DHCP_state(uint8_t state) {
 * @brief  Return DHCP state
 * @param  None
 * @retval One of the following state:
-            DHCP_OFF
-            DHCP_START
-            DHCP_WAIT_ADDRESS
-            DHCP_ADDRESS_ASSIGNED
-            DHCP_TIMEOUT
-            DHCP_LINK_DOWN
-            DHCP_ASK_RELEASE
+        DHCP_OFF
+        DHCP_START
+        DHCP_WAIT_ADDRESS
+        DHCP_ADDRESS_ASSIGNED
+        DHCP_TIMEOUT
+        DHCP_LINK_DOWN
+        DHCP_ASK_RELEASE
 */
 uint8_t stm32_get_DHCP_state(void) {
     return DHCP_state;
@@ -1015,7 +967,5 @@ void tcp_connection_close(struct tcp_pcb *tpcb, struct tcp_struct *tcp) {
     tcp->state = TCP_CLOSING;
 }
 
-
 #endif /* LWIP_TCP */
-
 }

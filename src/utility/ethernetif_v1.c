@@ -673,7 +673,7 @@ void ethernetif_set_link(void const *argument)
 
 {
   uint32_t regvalue = 0;
-  struct link_str *link_arg = (struct link_str *)argument;
+  struct netif *netif = (struct netif *)argument;
 
   for (;;)
   {
@@ -683,15 +683,15 @@ void ethernetif_set_link(void const *argument)
     regvalue &= PHY_LINKED_STATUS;
 
     /* Check whether the netif link down and the PHY link is up */
-    if (!netif_is_link_up(link_arg->netif) && (regvalue))
+    if (!netif_is_link_up(netif) && (regvalue))
     {
       /* network cable is connected */
-      netif_set_link_up(link_arg->netif);
+      netif_set_link_up(netif);
     }
-    else if (netif_is_link_up(link_arg->netif) && (!regvalue))
+    else if (netif_is_link_up(netif) && (!regvalue))
     {
       /* network cable is dis-connected */
-      netif_set_link_down(link_arg->netif);
+      netif_set_link_down(netif);
     }
 
     /* Suspend thread for 200 ms */

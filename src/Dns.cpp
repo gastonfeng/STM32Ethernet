@@ -79,8 +79,7 @@ int DNSClient::getHostByName(const char* aHostname, IPAddress& aResult)
     }
 
     // Check we've got a valid DNS server to use
-    if (iDNSServer == INADDR_NONE)
-    {
+    if (iDNSServer == IPAddress(0, 0, 0, 0)) {
         return INVALID_SERVER;
     }
 

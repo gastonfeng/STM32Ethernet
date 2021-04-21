@@ -110,7 +110,7 @@ ETH_TxPacketConfig TxConfig;
 
 /* Memory Pool Declaration */
 LWIP_MEMPOOL_DECLARE(RX_POOL,
-                     10, sizeof(struct pbuf_custom), "Zero-copy RX PBUF pool");
+                     32, sizeof(struct pbuf_custom), "Zero-copy RX PBUF pool");
 
 /* Private function prototypes -----------------------------------------------*/
 int32_t ETH_PHY_IO_Init(void);
@@ -500,10 +500,11 @@ static struct pbuf *low_level_input(struct netif *netif)
 
 #if !defined(DUAL_CORE) || defined(CORE_CM7)
         /* Invalidate data cache for ETH Rx Buffers */
-        SCB_InvalidateDCache_by_Addr((uint32_t *)RxBuff.buffer, framelength);
+        SCB_InvalidateDCache_by_Addr((uint32_t *) RxBuff.buffer, framelength);
 #endif
 
-        custom_pbuf = (struct pbuf_custom *)LWIP_MEMPOOL_ALLOC(RX_POOL);
+        custom_pbuf = (struct pbuf_custom *) LWIP_MEMPOOL_ALLOC(RX_POOL);
+        LWIP_ASSERT("RX_POOL_alloc: custom_pbuf != NULL", custom_pbuf != NULL);
         custom_pbuf->custom_free_function = pbuf_free_custom;
 
         p = pbuf_alloced_custom(PBUF_RAW, framelength, PBUF_REF, custom_pbuf, RxBuff.buffer, ETH_RX_BUFFER_SIZE);
