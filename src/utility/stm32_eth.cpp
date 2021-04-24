@@ -119,7 +119,6 @@ void iperf_server_socket_init();
 void iperf_server_netconn_init();
 void iperf_client_socket_init();
 void iperf_client_netconn_init();
-const char *protocol = "protocol=FIRMATA";
 
 /**
 * @brief  Configurates the network interface
