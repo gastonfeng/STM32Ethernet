@@ -280,16 +280,5 @@ int EthernetClass::diag() {
     return 0;
 }
 
-void srv_txt(struct mdns_service *service, void *txt_userdata) {
-    uint8_t res = 0;
-    res = mdns_resp_add_service_txtitem(service, (const char *) txt_userdata, strlen((char *) txt_userdata));
-    LWIP_ERROR("mdns add sevice txt failed.", res == ERR_OK,
-               return);
-}
-
-void EthernetClass::add_mdns(const char *service, int port, void *text) {
-
-    mdns_resp_add_service(&gnetif, service, "_PAC", DNSSD_PROTO_UDP, port, 3600, srv_txt, text);
-}
 
 EthernetClass Ethernet;

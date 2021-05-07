@@ -85,7 +85,6 @@ public:
 
     int diag() override;
 
-    void add_mdns(const char *service, int port, void *text);
 };
 
 extern EthernetClass Ethernet;
