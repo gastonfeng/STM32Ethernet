@@ -12,10 +12,11 @@ private:
   struct tcp_struct _tcp_server;
   struct tcp_struct *_tcp_client[MAX_CLIENT];
   
-  void accept(void);
+  void accept();
 public:
-  EthernetServer(uint16_t port = 80);
-  EthernetClient available();
+    explicit EthernetServer(uint16_t port = 80);
+
+    EthernetClient available();
   virtual void begin();
   virtual size_t write(uint8_t);
   virtual size_t write(const uint8_t *buf, size_t size);
