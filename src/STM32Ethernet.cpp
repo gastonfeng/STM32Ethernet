@@ -240,7 +240,7 @@ void EthernetClass::reset() {
 
 extern ETH_HandleTypeDef heth;
 
-#include"logger.h"
+#include"logger_rte.h"
 
 int EthernetClass::diag() {
 #ifdef STM32H750xx
