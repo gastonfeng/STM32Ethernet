@@ -3,28 +3,21 @@
 #include <STM32FreeRTOS.h>
 #include "lwip/apps/mdns.h"
 
-void thread_eth(void const *arg) {
-    EthernetClass *eth = (EthernetClass *) arg;
-    eth->thread();
-}
-
 #if DHCP
 int EthernetClass::begin(unsigned long timeout, unsigned long responseTimeout)
 {
-  static DhcpClass s_dhcp;
-  _dhcp = &s_dhcp;
-  stm32_eth_init(macAddressDefault(), NULL, NULL, NULL);
+    static DhcpClass s_dhcp;
+    _dhcp = &s_dhcp;
+    stm32_eth_init(macAddressDefault(), NULL, NULL, NULL);
 
-  // Now try to get our config info from a DHCP server
-  int ret = _dhcp->beginWithDHCP(mac_address, timeout, responseTimeout);
-  if (ret == 1)
-  {
-    _dnsServerAddress = _dhcp->getDnsServerIp();
-  }
-  osThreadDef(EthMon, thread_eth, osPriorityNormal, 0, 128);
-  osThreadCreate(osThread(EthMon), this);
+    // Now try to get our config info from a DHCP server
+    int ret = _dhcp->beginWithDHCP(mac_address, timeout, responseTimeout);
+    if (ret == 1)
+    {
+        _dnsServerAddress = _dhcp->getDnsServerIp();
+    }
 
-  return ret;
+    return ret;
 }
 #endif
 
@@ -65,30 +58,25 @@ void EthernetClass::begin(IPAddress local_ip, IPAddress subnet, IPAddress gatewa
     stm32_DHCP_manual_config();
 #endif
     _dnsServerAddress = dns_server;
-    osThreadDef(EthMon, thread_eth, osPriorityNormal, 0, 128);
-    osThreadCreate(osThread(EthMon), this);
 }
 
 #if DHCP
 int EthernetClass::begin(uint8_t *mac_address, unsigned long timeout, unsigned long responseTimeout)
 {
 
-  static DhcpClass s_dhcp;
-  _dhcp = &s_dhcp;
+    static DhcpClass s_dhcp;
+    _dhcp = &s_dhcp;
 
-  stm32_eth_init(mac_address, NULL, NULL, NULL);
+    stm32_eth_init(mac_address, NULL, NULL, NULL);
 
-  // Now try to get our config info from a DHCP server
-  int ret = _dhcp->beginWithDHCP(mac_address, timeout, responseTimeout);
-  if (ret == 1)
-  {
-    _dnsServerAddress = _dhcp->getDnsServerIp();
-  }
-  macAddress(mac_address);
-  osThreadDef(EthMon, thread_eth, osPriorityNormal, 0, 128);
-  osThreadCreate(osThread(EthMon), this);
-
-  return ret;
+    // Now try to get our config info from a DHCP server
+    int ret = _dhcp->beginWithDHCP(mac_address, timeout, responseTimeout);
+    if (ret == 1)
+    {
+        _dnsServerAddress = _dhcp->getDnsServerIp();
+    }
+    macAddress(mac_address);
+    return ret;
 }
 #endif
 
@@ -123,8 +111,6 @@ void EthernetClass::begin(uint8_t *mac, IPAddress local_ip, IPAddress dns_server
 #endif
     _dnsServerAddress = dns_server;
     macAddress(mac);
-    osThreadDef(EthMon, thread_eth, osPriorityNormal, 0, 128);
-    osThreadCreate(osThread(EthMon), this);
 }
 
 int EthernetClass::maintain() {
@@ -133,21 +119,21 @@ int EthernetClass::maintain() {
 
     if (_dhcp != NULL)
     {
-      //we have a pointer to dhcp, use it
-      rc = _dhcp->checkLease();
-      switch (rc)
-      {
-      case DHCP_CHECK_NONE:
-        //nothing done
-        break;
-      case DHCP_CHECK_RENEW_OK:
-      case DHCP_CHECK_REBIND_OK:
-        _dnsServerAddress = _dhcp->getDnsServerIp();
-        break;
-      default:
-        //this is actually a error, it will retry though
-        break;
-      }
+        //we have a pointer to dhcp, use it
+        rc = _dhcp->checkLease();
+        switch (rc)
+        {
+        case DHCP_CHECK_NONE:
+            //nothing done
+            break;
+        case DHCP_CHECK_RENEW_OK:
+        case DHCP_CHECK_REBIND_OK:
+            _dnsServerAddress = _dhcp->getDnsServerIp();
+            break;
+        default:
+            //this is actually a error, it will retry though
+            break;
+        }
     }
     return rc;
 #endif
@@ -209,69 +195,52 @@ IPAddress EthernetClass::dnsServerIP() {
 
 extern struct netif gnetif;
 
-void setReboot();
-
-void EthernetClass::reset() {
-#ifndef CORE_DEBUG
-    if (rstCount++ > 10) {
-        setReboot();
-    }
-#endif
-
-    ip4_addr_t ip;
-    ip.addr = uint32_t(local_ip);
-    stm32_eth_uninit();
-//  memp_init();
-    ethernetif_init(&gnetif);
-    netif_set_ipaddr(&gnetif, &ip);
-}
-
-[[noreturn]] void EthernetClass::thread() {
-    rstCount = 0;
-    while (true) {
-        //网络状态监控
-        if ((millis() - net_tick) > 10000) {
-            // Ethernet.reset();
-            net_tick = millis();
-        }
-        vTaskDelay(1000);
-    }
-}
-
 extern ETH_HandleTypeDef heth;
 
-#include"logger_rte.h"
+#include "logger_rte.h"
 
 int EthernetClass::diag() {
 #ifdef STM32H750xx
     bool IsRxDataAvailable = HAL_ETH_IsRxDataAvailable(&heth);
     if (__HAL_RCC_ETH1MAC_IS_CLK_DISABLED() || __HAL_RCC_ETH1TX_IS_CLK_DISABLED() ||
-        __HAL_RCC_ETH1RX_IS_CLK_DISABLED()) {
+        __HAL_RCC_ETH1RX_IS_CLK_DISABLED())
+    {
         logger.error("ETH clk not configed!\n");
     }
     if (__HAL_RCC_ETH1MAC_IS_CLK_SLEEP_DISABLED() || __HAL_RCC_ETH1TX_IS_CLK_SLEEP_DISABLED() ||
-        __HAL_RCC_ETH1RX_IS_CLK_SLEEP_DISABLED()) {
+        __HAL_RCC_ETH1RX_IS_CLK_SLEEP_DISABLED())
+    {
         logger.error("ETH SLEEP clk not configed!\n");
     }
 #endif
 #if defined(DUAL_CORE)
-    if(__HAL_RCC_C1_ETH1MAC_CLK_DISABLE()||__HAL_RCC_C1_ETH1TX_CLK_DISABLE()||__HAL_RCC_C1_ETH1RX_CLK_DISABLE()){
+    if (__HAL_RCC_C1_ETH1MAC_CLK_DISABLE() || __HAL_RCC_C1_ETH1TX_CLK_DISABLE() || __HAL_RCC_C1_ETH1RX_CLK_DISABLE())
+    {
         logger.error("ETH clk not configed!\n");
     }
-    if(__HAL_RCC_C2_ETH1MAC_CLK_DISABLE()||__HAL_RCC_C2_ETH1TX_CLK_DISABLE()||__HAL_RCC_C2_ETH1RX_CLK_DISABLE()){
+    if (__HAL_RCC_C2_ETH1MAC_CLK_DISABLE() || __HAL_RCC_C2_ETH1TX_CLK_DISABLE() || __HAL_RCC_C2_ETH1RX_CLK_DISABLE())
+    {
         logger.error("ETH clk not configed!\n");
     }
-    if(__HAL_RCC_C2_ETH1MAC_CLK_SLEEP_DISABLE()||__HAL_RCC_C2_ETH1TX_CLK_SLEEP_DISABLE()||__HAL_RCC_C2_ETH1RX_CLK_SLEEP_DISABLE()){
+    if (__HAL_RCC_C2_ETH1MAC_CLK_SLEEP_DISABLE() || __HAL_RCC_C2_ETH1TX_CLK_SLEEP_DISABLE() || __HAL_RCC_C2_ETH1RX_CLK_SLEEP_DISABLE())
+    {
         logger.error("ETH clk not configed!\n");
     }
 #endif
 
     uint32_t State = HAL_ETH_GetState(&heth);
+#ifdef STM32F4xx
+    if (State > HAL_ETH_STATE_ERROR) {
+        logger.error("ETH ERROR:State=0x%x\n", State);
+        return -1;
+    }
+#endif
 #ifdef STM32H750xx
     uint32_t Error = HAL_ETH_GetError(&heth);
     uint32_t DMAError = HAL_ETH_GetDMAError(&heth);
     uint32_t MACError = HAL_ETH_GetMACError(&heth);
-    if ((State > HAL_ETH_STATE_ERROR) || Error || DMAError || MACError) {
+    if ((State > HAL_ETH_STATE_ERROR) || Error || DMAError || MACError)
+    {
         logger.error("ETH ERROR:State=0x%xError=0x%x,DMAError=0x%x,MACError=0x%x\n", State, Error, DMAError, MACError);
         return -1;
     }
@@ -279,6 +248,5 @@ int EthernetClass::diag() {
     //@todo MPU保护检查
     return 0;
 }
-
 
 EthernetClass Ethernet;

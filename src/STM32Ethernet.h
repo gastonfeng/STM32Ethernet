@@ -66,15 +66,6 @@ public:
 
     void set_ip(IPAddress local_ip);
 
-    void reset();
-
-    [[noreturn]] void thread();
-
-    void touch() {
-        net_tick = millis();
-        rstCount = 0;
-    }
-
     friend class EthernetClient;
 
     friend class EthernetServer;
