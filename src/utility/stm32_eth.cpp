@@ -195,14 +195,7 @@ void stm32_eth_init(const uint8_t *mac, const uint8_t *ip, const uint8_t *gw, co
 
         // stm32_eth_scheduler() will be called every 1ms.
         // TIM_scheduler_Config();
-#if LWIP_MDNS_RESPONDER
-        mdns_resp_init();
-#if LWIP_NETIF_HOSTNAME
-        mdns_resp_add_netif(&gnetif, gnetif.hostname, 3600);
-#else
-        mdns_resp_add_netif(&gnetif, HWMODEL, 3600);
-#endif
-#endif
+
         initDone = 1;
     }
 
