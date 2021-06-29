@@ -192,7 +192,7 @@ int32_t LAN8742_Init(lan8742_Object_t *pObj)
     /* Wait for 2s to perform initialization */
     while ((pObj->IO.GetTick() - tickstart) <= LAN8742_INIT_TO)
     {
-      vTaskDelay(100);
+      // HAL_Delay(100);
     }
     pObj->Is_Initialized = 1;
   }

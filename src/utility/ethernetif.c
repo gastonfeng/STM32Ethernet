@@ -470,7 +470,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
     TxConfig.Length = framelen;
     TxConfig.TxBuffer = Txbuffer;
 
-    SCB_CleanInvalidateDCache(); //无效化并清除Dcache
+    // SCB_CleanInvalidateDCache(); //无效化并清除Dcache
     HAL_ETH_Transmit(&heth, &TxConfig, ETH_DMA_TRANSMIT_TIMEOUT);
 
     return errval;
@@ -490,7 +490,7 @@ static struct pbuf *low_level_input(struct netif *netif)
     ETH_BufferTypeDef RxBuff;
     uint32_t framelength = 0;
     struct pbuf_custom *custom_pbuf;
-    SCB_CleanInvalidateDCache(); //无效化并且清除Dcache
+    // SCB_CleanInvalidateDCache(); //无效化并且清除Dcache
     if (HAL_ETH_GetRxDataBuffer(&heth, &RxBuff) == HAL_OK)
     {
         HAL_ETH_GetRxDataLength(&heth, &framelength);
