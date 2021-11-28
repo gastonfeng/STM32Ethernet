@@ -34,16 +34,16 @@
   * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
   ******************************************************************************
-  */ 
+  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __LAN8742_H
-#define __LAN8742_H
+#ifndef LAN8742_H
+#define LAN8742_H
 
 #ifdef __cplusplus
- extern "C" {
-#endif   
-   
+extern "C" {
+#endif
+
 /* Includes ------------------------------------------------------------------*/
 #include <stdint.h>
 

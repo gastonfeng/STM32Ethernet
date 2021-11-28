@@ -41,8 +41,10 @@ struct link_str {
 
 /* Exported functions ------------------------------------------------------- */
 err_t ethernetif_init(struct netif *netif);
-void ethernetif_input(void const * argument);
-void ethernetif_set_link(void const *argument);
+void ethernetif_input(void const *argument);
+
+void ethernet_link_thread(void const *argument);
+
 void ethernetif_update_config(struct netif *netif);
 void ethernetif_notify_conn_changed(struct netif *netif);
 void stm32_eth_uninit();

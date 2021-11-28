@@ -241,7 +241,8 @@ int EthernetClass::diag() {
     uint32_t MACError = HAL_ETH_GetMACError(&heth);
     if ((State > HAL_ETH_STATE_ERROR) || Error || DMAError || MACError)
     {
-        logger.error("ETH ERROR:State=0x%xError=0x%x,DMAError=0x%x,MACError=0x%x\n", State, Error, DMAError, MACError);
+        logger.error("ETH ERROR:State=0x%x ,Error=0x%x,DMAError=0x%x,MACError=0x%x\n", State, Error, DMAError,
+                     MACError);
         return -1;
     }
 #endif

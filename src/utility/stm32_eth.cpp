@@ -208,7 +208,7 @@ void stm32_eth_init(const uint8_t *mac, const uint8_t *ip, const uint8_t *gw, co
     link_arg.netif = &gnetif;
     link_arg.semaphore = Netif_LinkSemaphore;
     /* Create the Ethernet link handler thread */
-    osThreadDef(LinkThr, ethernetif_set_link, osPriorityNormal, 0, 256);
+    osThreadDef(LinkThr, ethernet_link_thread, osPriorityNormal, 0, 256);
     osThreadCreate(osThread(LinkThr), &gnetif);
 #ifdef CORE_DEBUG
     iperf_server_socket_init();
@@ -233,7 +233,7 @@ to the lwIP for handling */
   /* Check ethernet link status */
   if ((HAL_GetTick() - gEhtLinkTickStart) >= TIME_CHECK_ETH_LINK_STATE)
   {
-    ethernetif_set_link(&gnetif);
+    ethernet_link_thread(&gnetif);
     gEhtLinkTickStart = HAL_GetTick();
   }
 
