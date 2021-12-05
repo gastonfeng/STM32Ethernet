@@ -163,10 +163,10 @@ void HAL_ETH_RxCpltCallback(ETH_HandleTypeDef *he) {
  */
 static void low_level_init(struct netif *netif) {
     HAL_StatusTypeDef hal_eth_init_status = HAL_OK;
-    uint32_t idx = 0;
     ETH_MACConfigTypeDef MACConf;
     int32_t PHYLinkState;
-    uint32_t duplex, speed = 0;
+    uint32_t duplex;
+    uint32_t speed = 0;
     /* Start ETH HAL Init */
 
     heth.Instance = ETH;
@@ -259,8 +259,7 @@ static void low_level_init(struct netif *netif) {
     /* Initialize the LAN8742 ETH PHY */
     LAN8742_Init(&LAN8742);
 #ifdef LAN8720
-    if (LAN8742_StartAutoNego(&LAN8742) != LAN8742_STATUS_OK)
-    {
+    if (LAN8742_StartAutoNego(&LAN8742) != LAN8742_STATUS_OK) {
         core_debug("LAN8742_StartAutoNego Failed!\n");
     }
 #endif
@@ -338,18 +337,19 @@ static void low_level_init(struct netif *netif) {
 
 static err_t low_level_output(struct netif *netif, struct pbuf *p) {
     uint32_t i = 0;
-    struct pbuf *q;
+    uint32_t framelen = 0;
     err_t errval = ERR_OK;
     ETH_BufferTypeDef Txbuffer[ETH_TX_DESC_CNT];
 
     memset(Txbuffer, 0, ETH_TX_DESC_CNT * sizeof(ETH_BufferTypeDef));
 
-    for (q = p; q != NULL; q = q->next) {
+    for (const struct pbuf *q = p; q != NULL; q = q->next) {
         if (i >= ETH_TX_DESC_CNT)
             return ERR_IF;
 
         Txbuffer[i].buffer = q->payload;
         Txbuffer[i].len = q->len;
+        framelen += q->len;
 
         if (i > 0) {
             Txbuffer[i - 1].next = &Txbuffer[i];
@@ -362,10 +362,11 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
         i++;
     }
 
-    TxConfig.Length = p->tot_len;
+    TxConfig.Length = framelen;
     TxConfig.TxBuffer = Txbuffer;
-
-    // SCB_CleanInvalidateDCache(); //无效化并清除Dcache
+#ifndef D_CACHE_DISABLED
+    SCB_CleanInvalidateDCache(); //无效化并清除Dcache
+#endif
     HAL_ETH_Transmit(&heth, &TxConfig, ETH_DMA_TRANSMIT_TIMEOUT);
 
     return errval;
@@ -381,15 +382,13 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p) {
  */
 static struct pbuf *low_level_input(struct netif *netif) {
     struct pbuf *p = NULL;
-    ETH_BufferTypeDef RxBuff[ETH_RX_DESC_CNT];
+    ETH_BufferTypeDef RxBuff;
     uint32_t framelength = 0;
     struct pbuf_custom *custom_pbuf;
-    // SCB_CleanInvalidateDCache(); //无效化并且清除Dcache
-    memset(RxBuff, 0, ETH_RX_DESC_CNT * sizeof(ETH_BufferTypeDef));
-    for (int i = 0; i < ETH_RX_DESC_CNT - 1; i++) {
-        RxBuff[i].next = &RxBuff[i + 1];
-    }
-    if (HAL_ETH_GetRxDataBuffer(&heth, RxBuff) == HAL_OK) {
+#ifndef D_CACHE_DISABLED
+    SCB_CleanInvalidateDCache(); //无效化并且清除Dcache
+#endif
+    if (HAL_ETH_GetRxDataBuffer(&heth, &RxBuff) == HAL_OK) {
         HAL_ETH_GetRxDataLength(&heth, &framelength);
 
         /* Build Rx descriptor to be ready for next data reception */
@@ -397,18 +396,17 @@ static struct pbuf *low_level_input(struct netif *netif) {
 
 #if !defined(DUAL_CORE) || defined(CORE_CM7)
         /* Invalidate data cache for ETH Rx Buffers */
-        SCB_InvalidateDCache_by_Addr((uint32_t *) RxBuff->buffer, framelength);
+        SCB_InvalidateDCache_by_Addr((uint32_t *) RxBuff.buffer, framelength);
 #endif
 
         custom_pbuf = (struct pbuf_custom *) LWIP_MEMPOOL_ALLOC(RX_POOL);
-        if (custom_pbuf != NULL) {
-            custom_pbuf->custom_free_function = pbuf_free_custom;
+        LWIP_ASSERT("RX_POOL_alloc: custom_pbuf != NULL", custom_pbuf != NULL);
+        custom_pbuf->custom_free_function = pbuf_free_custom;
 
-            p = pbuf_alloced_custom(PBUF_RAW, (uint16_t) framelength, PBUF_REF, custom_pbuf, RxBuff->buffer,
-                                    (uint16_t) framelength);
-
-        }
+        p = pbuf_alloced_custom(PBUF_RAW, (uint16_t) framelength, PBUF_REF, custom_pbuf, RxBuff.buffer,
+                                ETH_RX_BUFFER_SIZE);
     }
+
     return p;
 }
 
@@ -647,9 +645,11 @@ int32_t ETH_PHY_IO_GetTick(void)
 void ethernet_link_thread(void const *argument) {
     ETH_MACConfigTypeDef MACConf;
     uint32_t PHYLinkState;
-    uint32_t linkchanged = 0, speed = 0, duplex = 0;
+    uint32_t duplex = 0;
+    uint32_t linkchanged = 0;
+    uint32_t speed = 0;
 
-    struct netif *netif = (struct netif *) argument;
+    const struct netif *netif = (const struct netif *) argument;
 
     for (;;) {
         PHYLinkState = LAN8742_GetLinkState(&LAN8742);
@@ -701,24 +701,21 @@ void ethernet_link_thread(void const *argument) {
             /* USER CODE END ETH link code for User BSP */
         }
 
-/* USER CODE BEGIN ETH link Thread core code for User BSP */
+        /* USER CODE BEGIN ETH link Thread core code for User BSP */
 
         /* Restart MAC interface */
 
         osDelay(100);
         /* Stop MAC interface */
     }
-
 }
+
 void ethernetif_update_config(struct netif *netif) {
 
-    if (netif_is_link_up(netif))
-    {
+    if (netif_is_link_up(netif)) {
         /* Restart MAC interface */
         HAL_ETH_Start(&heth);
-    }
-    else
-    {
+    } else {
         /* Stop MAC interface */
         HAL_ETH_Stop(&heth);
     }
@@ -752,6 +749,5 @@ void ETH_IRQHandler(void)
 }
 /* USER CODE END 8 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-
 
 #endif
