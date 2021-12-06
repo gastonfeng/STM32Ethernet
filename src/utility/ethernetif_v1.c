@@ -669,7 +669,7 @@ u32_t sys_now(void)
   * @param  netif: the network interface
   * @retval None
   */
-void ethernet_link_thread(void const *argument)
+void ethernetif_set_link(void const *argument)
 
 {
   uint32_t regvalue = 0;

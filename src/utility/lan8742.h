@@ -37,8 +37,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef LAN8742_H
-#define LAN8742_H
+#ifndef __LAN8742_H
+#define __LAN8742_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,7 +49,7 @@ extern "C" {
 
 /** @addtogroup BSP
   * @{
-  */ 
+  */
 
 /** @addtogroup Component
   * @{

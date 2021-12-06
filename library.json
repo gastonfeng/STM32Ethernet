@@ -10,7 +10,6 @@
   "frameworks": "arduino",
   "platforms": "ststm32",
   "build": {
-    "libArchive": false,
     "flags": [
       "-I src",
       "-I src/utility",

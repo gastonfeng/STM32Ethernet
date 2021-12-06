@@ -346,7 +346,7 @@ void stm32_DHCP_manual_config(void) {
 */
 uint8_t stm32_get_DHCP_lease_state(void) {
     uint8_t res = 0;
-    struct dhcp *dhcp = (struct dhcp *) netif_get_client_data(&gnetif, LWIP_NETIF_CLIENT_DATA_INDEX_DHCP);
+    auto *dhcp = (struct dhcp *) netif_get_client_data(&gnetif, LWIP_NETIF_CLIENT_DATA_INDEX_DHCP);
 
     if (dhcp->state == DHCP_STATE_RENEWING) {
         res = 2;
@@ -429,7 +429,7 @@ uint32_t stm32_eth_get_dnsaddr(void) {
 */
 #if LWIP_DHCP
 uint32_t stm32_eth_get_dhcpaddr(void) {
-    struct dhcp *dhcp = (struct dhcp *) netif_get_client_data(&gnetif, LWIP_NETIF_CLIENT_DATA_INDEX_DHCP);
+    auto *dhcp = (struct dhcp *) netif_get_client_data(&gnetif, LWIP_NETIF_CLIENT_DATA_INDEX_DHCP);
     return ip4_addr_get_u32(&(dhcp->server_ip_addr));
 }
 #endif
@@ -442,7 +442,7 @@ uint32_t stm32_eth_get_dhcpaddr(void) {
 */
 void ethernetif_notify_conn_changed(struct netif *netif) {
     if (netif_is_link_up(netif)) {
-        core_debug("Link up\n");
+        // core_debug("Link up\n");
 
         /* Update DHCP state machine if DHCP used */
         if (DHCP_Started_by_user == 1) {
@@ -460,7 +460,7 @@ void ethernetif_notify_conn_changed(struct netif *netif) {
         /*  When the netif link is down this function must be called.*/
         netif_set_down(netif);
 
-        core_debug("Link down\n");
+        // core_debug("Link down\n");
     }
 }
 
@@ -622,12 +622,10 @@ struct pbuf *stm32_new_data(struct pbuf *p, const uint8_t *buffer, size_t size) 
         struct pbuf *q = pbuf_alloc(PBUF_TRANSPORT, size + p->tot_len, PBUF_RAM);
 
         if (q != NULL) {
-            if (ERR_OK == pbuf_copy(q, p)) {
-                if (ERR_OK == pbuf_take_at(q, (uint8_t *) buffer, size, p->tot_len)) {
-                    pbuf_free(p);
-                    p = q;
-                    return p;
-                }
+            if (ERR_OK == pbuf_copy(q, p) && ERR_OK == pbuf_take_at(q, (uint8_t *) buffer, size, p->tot_len)) {
+                pbuf_free(p);
+                p = q;
+                return p;
             }
 
             pbuf_free(q);
@@ -663,7 +661,6 @@ struct pbuf *stm32_free_data(struct pbuf *p) {
 * @retval number of data read
 */
 uint16_t stm32_get_data(struct pbuf_data *data, uint8_t *buffer, size_t size) {
-    uint16_t i;
     uint16_t offset;
     uint16_t nb;
     struct pbuf *ptr;
@@ -680,7 +677,7 @@ uint16_t stm32_get_data(struct pbuf_data *data, uint8_t *buffer, size_t size) {
         offset = ptr->tot_len - data->available;
 
         /* Get data from p */
-        for (i = 0; (nb < size) && ((offset + i) < ptr->len) && (data->available > 0); i++) {
+        for (int i = 0; (nb < size) && ((offset + i) < ptr->len) && (data->available > 0); i++) {
             buffer[nb] = pbuf_get_at(ptr, offset + i);
             nb++;
             data->available--;
@@ -721,7 +718,7 @@ uint16_t stm32_get_data(struct pbuf_data *data, uint8_t *buffer, size_t size) {
 */
 void udp_receive_callback(void *arg, struct udp_pcb *pcb, struct pbuf *p,
                           const ip_addr_t *addr, u16_t port) {
-    struct udp_struct *udp_arg = (struct udp_struct *) arg;
+    auto *udp_arg = (struct udp_struct *) arg;
 
     /* Send data to the application layer */
     if ((udp_arg != NULL) && (udp_arg->pcb == pcb)) {
@@ -752,7 +749,7 @@ void udp_receive_callback(void *arg, struct udp_pcb *pcb, struct pbuf *p,
 * @retval err_t: returned error
 */
 err_t tcp_connected_callback(void *arg, struct tcp_pcb *tpcb, err_t err) {
-    struct tcp_struct *tcp_arg = (struct tcp_struct *) arg;
+    auto *tcp_arg = (struct tcp_struct *) arg;
 
     if (err == ERR_OK) {
         if ((tcp_arg != NULL) && (tcp_arg->pcb == tpcb)) {
@@ -788,13 +785,13 @@ err_t tcp_connected_callback(void *arg, struct tcp_pcb *tpcb, err_t err) {
 err_t tcp_accept_callback(void *arg, struct tcp_pcb *newpcb, err_t err) {
     err_t ret_err;
     uint8_t accepted;
-    struct tcp_struct **tcpClient = (struct tcp_struct **) arg;
+    auto **tcpClient = (struct tcp_struct **) arg;
 
     /* set priority for the newly accepted tcp connection newpcb */
     tcp_setprio(newpcb, TCP_PRIO_MIN);
 
     if ((tcpClient != NULL) && (ERR_OK == err)) {
-        struct tcp_struct *client = (struct tcp_struct *) mem_malloc(sizeof(struct tcp_struct));
+        auto *client = (struct tcp_struct *) mem_malloc(sizeof(struct tcp_struct));
 
         if (client != NULL) {
             client->state = TCP_ACCEPTED;
@@ -856,7 +853,7 @@ err_t tcp_accept_callback(void *arg, struct tcp_pcb *newpcb, err_t err) {
 * @retval err_t: retuned error
 */
 static err_t tcp_recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err) {
-    struct tcp_struct *tcp_arg = (struct tcp_struct *) arg;
+    auto *tcp_arg = (struct tcp_struct *) arg;
     err_t ret_err;
 
     /* if we receive an empty tcp frame from server => close connection */
@@ -906,7 +903,7 @@ static err_t tcp_recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, 
 * @retval err_t: returned error code
 */
 static err_t tcp_sent_callback(void *arg, struct tcp_pcb *tpcb, u16_t len) {
-    struct tcp_struct *tcp_arg = (struct tcp_struct *) arg;
+    auto *tcp_arg = (struct tcp_struct *) arg;
 
     LWIP_UNUSED_ARG(len);
 
@@ -928,13 +925,11 @@ static err_t tcp_sent_callback(void *arg, struct tcp_pcb *tpcb, u16_t len) {
 *            ERR_RST: the connection was reset by the remote host
 */
 static void tcp_err_callback(void *arg, err_t err) {
-    struct tcp_struct *tcp_arg = (struct tcp_struct *) arg;
+    auto *tcp_arg = (struct tcp_struct *) arg;
 
-    if (tcp_arg != NULL) {
-        if (ERR_OK != err) {
-            tcp_arg->pcb = NULL;
-            tcp_arg->state = TCP_CLOSING;
-        }
+    if (tcp_arg != NULL && ERR_OK != err) {
+        tcp_arg->pcb = NULL;
+        tcp_arg->state = TCP_CLOSING;
     }
 }
 
@@ -946,17 +941,18 @@ static void tcp_err_callback(void *arg, err_t err) {
 */
 void tcp_connection_close(struct tcp_pcb *tpcb, struct tcp_struct *tcp) {
     /* remove callbacks */
-    tcp_recv(tpcb, NULL);
-    tcp_sent(tpcb, NULL);
-    tcp_poll(tpcb, NULL, 0);
-    tcp_err(tpcb, NULL);
-    tcp_accept(tpcb, NULL);
+    tcp_recv(tpcb, nullptr);
+    tcp_sent(tpcb, nullptr);
+    tcp_poll(tpcb, nullptr, 0);
+    tcp_err(tpcb, nullptr);
+    tcp_accept(tpcb, nullptr);
 
     /* close tcp connection */
     tcp_close(tpcb);
-
-    tcp->pcb = NULL;
-    tcp->state = TCP_CLOSING;
+    if (tcp != nullptr) {
+        tcp->pcb = nullptr;
+        tcp->state = TCP_CLOSING;
+    }
 }
 
 #endif /* LWIP_TCP */
