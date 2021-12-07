@@ -258,11 +258,6 @@ static void low_level_init(struct netif *netif) {
 
     /* Initialize the LAN8742 ETH PHY */
     LAN8742_Init(&LAN8742);
-#ifdef LAN8720
-    if (LAN8742_StartAutoNego(&LAN8742) != LAN8742_STATUS_OK) {
-        core_debug("LAN8742_StartAutoNego Failed!\n");
-    }
-#endif
     if (hal_eth_init_status == HAL_OK) {
         PHYLinkState = LAN8742_GetLinkState(&LAN8742);
 
