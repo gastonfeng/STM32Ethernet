@@ -1,4 +1,4 @@
-#ifdef STM32H750xx
+#ifdef STM32H750xx1
 
 /**
  ******************************************************************************
@@ -705,7 +705,7 @@ void ethernet_link_thread(void const *argument) {
     }
 }
 
-void ethernetif_update_config(struct netif *netif) {
+void ethernet_link_status_updated(struct netif *netif) {
 
     if (netif_is_link_up(netif)) {
         /* Restart MAC interface */

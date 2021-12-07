@@ -89,7 +89,7 @@ struct link_str link_arg;
 static struct stm32_eth_config gconfig;
 
 /* Netif global configuration structure */
-struct netif gnetif;
+extern struct netif gnetif;
 
 /* DHCP periodic timer */
 static uint32_t DHCPfineTimer = 0;
@@ -143,7 +143,7 @@ static void Netif_Config(void) {
 
 #if LWIP_NETIF_LINK_CALLBACK
     /* Set the link callback function, this function is called on change of link status */
-    netif_set_link_callback(&gnetif, ethernetif_update_config);
+    netif_set_link_callback(&gnetif, ethernet_link_status_updated);
 #endif /* LWIP_NETIF_LINK_CALLBACK */
 }
 

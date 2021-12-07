@@ -57,7 +57,7 @@
  * @{
  */
 #define LAN8742_SW_RESET_TO ((uint32_t)500U)
-#define LAN8742_INIT_TO ((uint32_t)2000U)
+#define LAN8742_INIT_TO ((uint32_t)3000U)
 #define LAN8742_MAX_DEV_ADDR ((uint32_t)31U)
 /**
  * @}
@@ -176,7 +176,7 @@ int32_t LAN8742_Init(lan8742_Object_t *pObj) {
 
         /* Wait for 2s to perform initialization */
         while ((pObj->IO.GetTick() - tickstart) <= LAN8742_INIT_TO) {
-            // HAL_Delay(100);
+            HAL_Delay(100);
         }
         pObj->Is_Initialized = 1;
     }

@@ -710,7 +710,7 @@ void ethernetif_set_link(void const *argument)
 * @param  netif: The network interface
   * @retval None
   */
-void ethernetif_update_config(struct netif *netif)
+void ethernet_link_status_updated(struct netif *netif)
 {
   __IO uint32_t tickstart = 0;
   uint32_t regvalue = 0;
