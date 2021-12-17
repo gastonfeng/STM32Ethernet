@@ -36,19 +36,13 @@
   ******************************************************************************
   */
 
-#include "Arduino.h"
+#include <ethernetif.h>
 #include "stm32_eth.h"
-#include "lwip/init.h"
-#include "lwip/netif.h"
 #include "lwip/timeouts.h"
 #include "netif/ethernet.h"
-#include "ethernetif.h"
-#include "lwip/dhcp.h"
 #include "lwip/prot/dhcp.h"
 #include "lwip/dns.h"
 #include "lwip/tcpip.h"
-#include "core_debug.h"
-#include "lwip/apps/mdns.h"
 
 extern const unsigned short build_number;
 const char *mdns_name = "PAC";
@@ -82,7 +76,7 @@ struct stm32_eth_config {
     ip_addr_t netmask;
     ip_addr_t gw;
 };
-osSemaphoreId Netif_LinkSemaphore = NULL;
+extern osSemaphoreId Netif_LinkSemaphore;
 /* Ethernet link thread Argument */
 struct link_str link_arg;
 /* Use to give user parameters to netif configuration */
@@ -143,7 +137,7 @@ static void Netif_Config(void) {
 
 #if LWIP_NETIF_LINK_CALLBACK
     /* Set the link callback function, this function is called on change of link status */
-    netif_set_link_callback(&gnetif, ethernet_link_status_updated);
+    netif_set_link_callback(&gnetif, ethernetif_notify_conn_changed);
 #endif /* LWIP_NETIF_LINK_CALLBACK */
 }
 
@@ -208,7 +202,7 @@ void stm32_eth_init(const uint8_t *mac, const uint8_t *ip, const uint8_t *gw, co
     link_arg.netif = &gnetif;
     link_arg.semaphore = Netif_LinkSemaphore;
     /* Create the Ethernet link handler thread */
-    osThreadDef(LinkThr, ethernet_link_thread, osPriorityNormal, 0, 256);
+    osThreadDef(LinkThr, ethernetif_set_link, osPriorityNormal, 0, 256);
     osThreadCreate(osThread(LinkThr), &gnetif);
 #ifdef CORE_DEBUG
     iperf_server_socket_init();
