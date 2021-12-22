@@ -203,7 +203,7 @@ void stm32_eth_init(const uint8_t *mac, const uint8_t *ip, const uint8_t *gw, co
     link_arg.semaphore = Netif_LinkSemaphore;
     /* Create the Ethernet link handler thread */
     osThreadDef(LinkThr, ethernetif_set_link, osPriorityNormal, 0, 256);
-    osThreadCreate(osThread(LinkThr), &gnetif);
+    osThreadCreate(osThread(LinkThr), &link_arg);
 #ifdef CORE_DEBUG
     iperf_server_socket_init();
     iperf_server_netconn_init();
