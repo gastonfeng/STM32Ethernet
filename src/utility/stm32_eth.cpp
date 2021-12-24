@@ -44,9 +44,6 @@
 #include "lwip/dns.h"
 #include "lwip/tcpip.h"
 
-extern const unsigned short build_number;
-const char *mdns_name = "PAC";
-
 extern "C"
 {
 
@@ -76,9 +73,7 @@ struct stm32_eth_config {
     ip_addr_t netmask;
     ip_addr_t gw;
 };
-extern osSemaphoreId Netif_LinkSemaphore;
-/* Ethernet link thread Argument */
-struct link_str link_arg;
+
 /* Use to give user parameters to netif configuration */
 static struct stm32_eth_config gconfig;
 
@@ -113,7 +108,7 @@ void iperf_server_socket_init();
 void iperf_server_netconn_init();
 void iperf_client_socket_init();
 void iperf_client_netconn_init();
-
+void ethernetif_notify_conn_changed(struct netif *netif);
 /**
 * @brief  Configurates the network interface
 * @param  None
@@ -195,15 +190,9 @@ void stm32_eth_init(const uint8_t *mac, const uint8_t *ip, const uint8_t *gw, co
 
     /* Reset DHCP if used */
     User_notification(&gnetif);
-    /* create a binary semaphore used for informing ethernetif of frame reception */
-    osSemaphoreDef(Netif_SEM);
-    Netif_LinkSemaphore = osSemaphoreCreate(osSemaphore(Netif_SEM), 1);
-
-    link_arg.netif = &gnetif;
-    link_arg.semaphore = Netif_LinkSemaphore;
     /* Create the Ethernet link handler thread */
-    osThreadDef(LinkThr, ethernetif_set_link, osPriorityNormal, 0, 256);
-    osThreadCreate(osThread(LinkThr), &link_arg);
+    osThreadDef(LinkThr, ethernet_link_thread, osPriorityNormal, 0, 256);
+    osThreadCreate(osThread(LinkThr), &gnetif);
 #ifdef CORE_DEBUG
     iperf_server_socket_init();
     iperf_server_netconn_init();
