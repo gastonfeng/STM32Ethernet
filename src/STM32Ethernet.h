@@ -72,7 +72,7 @@ public:
 
     int run() override {}
 
-    void begin() override {}
+    int begin() override {}
 
     int diag() override;
 
