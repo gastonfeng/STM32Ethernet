@@ -180,7 +180,7 @@ static void low_level_init(struct netif *netif) {
 #else
     uint8_t id[12];
     HAL_GetUID((uint32_t *)id);
-    netif->hwaddr[0] = id[0] & 0xfc;
+  netif->hwaddr[0] = id[0] & 0xfd;
     netif->hwaddr[1] = id[2];
     netif->hwaddr[2] = id[4];
     netif->hwaddr[3] = id[6];
