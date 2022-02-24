@@ -251,4 +251,4 @@ int EthernetClass::diag() {
     return 0;
 }
 
-EthernetClass Ethernet;
+// EthernetClass Ethernet;
