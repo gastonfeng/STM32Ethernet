@@ -73,11 +73,11 @@ public:
 
     friend class EthernetServer;
 
-    int run() override { return 0; }
+    int run(u32 tick) override { return 0; }
 
-    int begin() override { return 0; }
+    int begin(u32 tick) override { return 0; }
 
-    int diag() override;
+    int diag(u32 tick) override;
 
 };
 

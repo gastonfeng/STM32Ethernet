@@ -201,17 +201,15 @@ extern ETH_HandleTypeDef heth;
 
 #include "logger_rte.h"
 
-int EthernetClass::diag() {
+int EthernetClass::diag(u32 tick) {
 #ifdef STM32H750xx
     bool IsRxDataAvailable = HAL_ETH_IsRxDataAvailable(&heth);
     if (__HAL_RCC_ETH1MAC_IS_CLK_DISABLED() || __HAL_RCC_ETH1TX_IS_CLK_DISABLED() ||
-        __HAL_RCC_ETH1RX_IS_CLK_DISABLED())
-    {
+        __HAL_RCC_ETH1RX_IS_CLK_DISABLED()) {
         logger.error("ETH clk not configed!\n");
     }
     if (__HAL_RCC_ETH1MAC_IS_CLK_SLEEP_DISABLED() || __HAL_RCC_ETH1TX_IS_CLK_SLEEP_DISABLED() ||
-        __HAL_RCC_ETH1RX_IS_CLK_SLEEP_DISABLED())
-    {
+        __HAL_RCC_ETH1RX_IS_CLK_SLEEP_DISABLED()) {
         logger.error("ETH SLEEP clk not configed!\n");
     }
 #endif
