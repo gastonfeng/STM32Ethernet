@@ -120,19 +120,19 @@ int EthernetClass::maintain() {
 
     if (_dhcp != NULL)
     {
-        //we have a pointer to dhcp, use it
+        // we have a pointer to dhcp, use it
         rc = _dhcp->checkLease();
         switch (rc)
         {
         case DHCP_CHECK_NONE:
-            //nothing done
+            // nothing done
             break;
         case DHCP_CHECK_RENEW_OK:
         case DHCP_CHECK_REBIND_OK:
             _dnsServerAddress = _dhcp->getDnsServerIp();
             break;
         default:
-            //this is actually a error, it will retry though
+            // this is actually a error, it will retry though
             break;
         }
     }
@@ -205,11 +205,13 @@ int EthernetClass::diag(u32 tick) {
 #ifdef STM32H750xx
     bool IsRxDataAvailable = HAL_ETH_IsRxDataAvailable(&heth);
     if (__HAL_RCC_ETH1MAC_IS_CLK_DISABLED() || __HAL_RCC_ETH1TX_IS_CLK_DISABLED() ||
-        __HAL_RCC_ETH1RX_IS_CLK_DISABLED()) {
+        __HAL_RCC_ETH1RX_IS_CLK_DISABLED())
+    {
         logger.error("ETH clk not configed!\n");
     }
     if (__HAL_RCC_ETH1MAC_IS_CLK_SLEEP_DISABLED() || __HAL_RCC_ETH1TX_IS_CLK_SLEEP_DISABLED() ||
-        __HAL_RCC_ETH1RX_IS_CLK_SLEEP_DISABLED()) {
+        __HAL_RCC_ETH1RX_IS_CLK_SLEEP_DISABLED())
+    {
         logger.error("ETH SLEEP clk not configed!\n");
     }
 #endif
@@ -227,7 +229,14 @@ int EthernetClass::diag(u32 tick) {
         logger.error("ETH clk not configed!\n");
     }
 #endif
-
+    u32 irq_act = HAL_NVIC_GetActive(ETH_IRQn);
+    if (irq_act) {
+        logger.error("ETH ERROR:HAL_NVIC_GetActive=0x%x\n", irq_act);
+    }
+    u32 irq_mask = HAL_NVIC_GetPendingIRQ(ETH_IRQn);
+    if (irq_mask) {
+        logger.error("ETH ERROR:HAL_NVIC_GetPendingIRQ=0x%x\n", irq_mask);
+    }
     uint32_t State = HAL_ETH_GetState(&heth);
 #ifdef STM32F4xx
     if (State > HAL_ETH_STATE_ERROR) {
