@@ -1,7 +1,5 @@
 #include "STM32Ethernet.h"
-#include "Dhcp.h"
 #include <STM32FreeRTOS.h>
-#include "lwip/apps/mdns.h"
 
 #if DHCP
 int EthernetClass::begin(unsigned long timeout, unsigned long responseTimeout)
@@ -193,7 +191,6 @@ IPAddress EthernetClass::dnsServerIP() {
     return _dnsServerAddress;
 }
 
-#include "ethernetif.h"
 
 struct netif gnetif;
 
@@ -258,4 +255,4 @@ int EthernetClass::diag(u32 tick) {
     return 0;
 }
 
-// EthernetClass Ethernet;
+ EthernetClass Ethernet;
