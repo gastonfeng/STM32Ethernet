@@ -226,6 +226,21 @@ int EthernetClass::diag(u32 tick) {
         logger.error("ETH clk not configed!\n");
     }
 #endif
+    if ((heth.Instance->MACDBGR & ETH_MACDBGR_MMRPEA) == 0) {
+        logger.error("MAC MII receive protocol engine not active");
+    }
+    if ((heth.Instance->MACDBGR & ETH_MACDBGR_RFWRA) == 0) {
+        logger.error("Rx FIFO write controller not active");
+    }
+    if ((heth.Instance->MACDBGR & ETH_MACDBGR_RFFL_FULL) == ETH_MACDBGR_RFFL_FULL) {
+        logger.error("RxFIFO full");
+    }
+    if ((heth.Instance->MACDBGR & ETH_MACDBGR_MTP) == ETH_MACDBGR_MTP) {
+        logger.error("MAC transmitter in pause");
+    }
+    if ((heth.Instance->MACDBGR & ETH_MACDBGR_TFF) == ETH_MACDBGR_TFF) {
+        logger.error("Tx FIFO full");
+    }
     u32 irq_act = HAL_NVIC_GetActive(ETH_IRQn);
     if (irq_act) {
         logger.error("ETH ERROR:HAL_NVIC_GetActive=0x%x\n", irq_act);
