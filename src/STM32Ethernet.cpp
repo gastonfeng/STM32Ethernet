@@ -226,6 +226,7 @@ int EthernetClass::diag(u32 tick) {
         logger.error("ETH clk not configed!\n");
     }
 #endif
+#ifdef STM32F4xx
     if ((heth.Instance->MACDBGR & ETH_MACDBGR_MMRPEA) == 0) {
         logger.error("MAC MII receive protocol engine not active");
     }
@@ -249,13 +250,14 @@ int EthernetClass::diag(u32 tick) {
     if (irq_mask) {
         logger.error("ETH ERROR:HAL_NVIC_GetPendingIRQ=0x%x\n", irq_mask);
     }
+#endif
     uint32_t State = HAL_ETH_GetState(&heth);
-#ifdef STM32F4xx
+
     if (State > HAL_ETH_STATE_ERROR) {
         logger.error("ETH ERROR:State=0x%x\n", State);
         return -1;
     }
-#endif
+
 #ifdef STM32H750xx
     uint32_t Error = HAL_ETH_GetError(&heth);
     uint32_t DMAError = HAL_ETH_GetDMAError(&heth);
