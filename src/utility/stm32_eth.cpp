@@ -191,7 +191,7 @@ void stm32_eth_init(const uint8_t *mac, const uint8_t *ip, const uint8_t *gw, co
     /* Reset DHCP if used */
     User_notification(&gnetif);
     /* Create the Ethernet link handler thread */
-    osThreadDef(LinkThr, ethernet_link_thread, osPriorityNormal, 0, 256);
+    osThreadDef(LinkThr, ethernet_link_thread, osPriorityNormal, 0, 384);
     osThreadCreate(osThread(LinkThr), &gnetif);
 #ifdef CORE_DEBUG
     iperf_server_socket_init();
