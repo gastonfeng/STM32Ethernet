@@ -79,6 +79,7 @@ public:
 
     int diag(u32 tick) override;
 
+    void end();
 };
 
 extern EthernetClass Ethernet;
