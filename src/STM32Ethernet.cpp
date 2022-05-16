@@ -1,11 +1,10 @@
 #include "STM32Ethernet.h"
-#include "Dhcp.h"
 
 int EthernetClass::begin(unsigned long timeout, unsigned long responseTimeout)
 {
   static DhcpClass s_dhcp;
-  _dhcp = &s_dhcp;
-  stm32_eth_init(MACAddressDefault(), NULL, NULL, NULL);
+    _dhcp = &s_dhcp;
+    stm32_eth_init(MACAddressDefault(), nullptr, nullptr, nullptr);
 
   // Now try to get our config info from a DHCP server
   int ret = _dhcp->beginWithDHCP(mac_address, timeout, responseTimeout);
@@ -31,19 +30,24 @@ void EthernetClass::begin(IPAddress local_ip, IPAddress subnet)
   begin(local_ip, subnet, gateway);
 }
 
-void EthernetClass::begin(IPAddress local_ip, IPAddress subnet, IPAddress gateway)
-{
-  // Assume the DNS server will be the same machine than gateway
-  begin(local_ip, subnet, gateway, gateway);
+void EthernetClass::begin(IPAddress local_ip, IPAddress subnet, IPAddress gateway) {
+    // Assume the DNS server will be the same machine than gateway
+    begin(local_ip, subnet, gateway, gateway);
 }
 
-void EthernetClass::begin(IPAddress local_ip, IPAddress subnet, IPAddress gateway, IPAddress dns_server)
-{
-  stm32_eth_init(MACAddressDefault(), local_ip.raw_address(), gateway.raw_address(), subnet.raw_address());
-  /* If there is a local DHCP informs it of our manual IP configuration to
-  prevent IP conflict */
-  stm32_DHCP_manual_config();
-  _dnsServerAddress = dns_server;
+void EthernetClass::set_ip(IPAddress &local_ip_) {
+    extern struct netif gnetif;
+    ip4_addr_t ip;
+    ip.addr = uint32_t(local_ip_);
+    netif_set_ipaddr(&gnetif, &ip);
+}
+
+void EthernetClass::begin(IPAddress local_ip, IPAddress subnet, IPAddress gateway, IPAddress dns_server) {
+    stm32_eth_init(MACAddressDefault(), local_ip.raw_address(), gateway.raw_address(), subnet.raw_address());
+    /* If there is a local DHCP informs it of our manual IP configuration to
+    prevent IP conflict */
+    stm32_DHCP_manual_config();
+    _dnsServerAddress = dns_server;
 }
 
 int EthernetClass::begin(uint8_t *mac_address, unsigned long timeout, unsigned long responseTimeout)
@@ -51,7 +55,7 @@ int EthernetClass::begin(uint8_t *mac_address, unsigned long timeout, unsigned l
   static DhcpClass s_dhcp;
   _dhcp = &s_dhcp;
 
-  stm32_eth_init(mac_address, NULL, NULL, NULL);
+    stm32_eth_init(mac_address, nullptr, nullptr, nullptr);
 
   // Now try to get our config info from a DHCP server
   int ret = _dhcp->beginWithDHCP(mac_address, timeout, responseTimeout);
@@ -105,17 +109,17 @@ int EthernetClass::maintain()
 {
   int rc = DHCP_CHECK_NONE;
 
-  if (_dhcp != NULL) {
-    //we have a pointer to dhcp, use it
-    rc = _dhcp->checkLease();
-    switch (rc) {
-      case DHCP_CHECK_NONE:
-        //nothing done
-        break;
-      case DHCP_CHECK_RENEW_OK:
-      case DHCP_CHECK_REBIND_OK:
-        _dnsServerAddress = _dhcp->getDnsServerIp();
-        break;
+    if (_dhcp != nullptr) {
+        //we have a pointer to dhcp, use it
+        rc = _dhcp->checkLease();
+        switch (rc) {
+            case DHCP_CHECK_NONE:
+                //nothing done
+                break;
+            case DHCP_CHECK_RENEW_OK:
+            case DHCP_CHECK_REBIND_OK:
+                _dnsServerAddress = _dhcp->getDnsServerIp();
+                break;
       default:
         //this is actually a error, it will retry though
         break;
@@ -182,7 +186,7 @@ IPAddress EthernetClass::dnsServerIP()
   return _dnsServerAddress;
 }
 
-struct netif gnetif;
+extern struct netif gnetif;
 
 extern ETH_HandleTypeDef heth;
 

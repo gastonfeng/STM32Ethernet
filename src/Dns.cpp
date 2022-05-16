@@ -2,11 +2,9 @@
 // (c) Copyright 2009-2010 MCQN Ltd.
 // Released under Apache License, version 2.0
 #include "EthernetUdp.h"
-#include "utility/stm32_eth.h"
 #if LWIP_DNS
 
 #include "Dns.h"
-#include <string.h>
 #include "Arduino.h"
 
 // Possible return codes from ProcessResponse
@@ -15,7 +13,7 @@
 #define INVALID_SERVER   -2
 #define TRUNCATED        -3
 #define INVALID_RESPONSE -4
-
+#undef inet_aton
 void DNSClient::begin(const IPAddress &aDNSServer)
 {
   iDNSServer = aDNSServer;
@@ -28,9 +26,9 @@ int DNSClient::inet_aton(const char *address, IPAddress &result)
   uint16_t acc = 0; // Accumulator
   uint8_t dots = 0;
 
-  if (address == NULL) {
-    return 0;
-  }
+    if (address == nullptr) {
+        return 0;
+    }
 
   while (*address) {
     char c = *address++;
@@ -61,26 +59,25 @@ int DNSClient::inet_aton(const char *address, IPAddress &result)
   return 1;
 }
 
-int DNSClient::getHostByName(const char *aHostname, IPAddress &aResult)
-{
-  int ret = 0;
-  uint32_t ipResult = 0;
+int DNSClient::getHostByName(const char *aHostname, IPAddress &aResult) {
+    int ret;
+    uint32_t ipResult = 0;
 
-  // See if it's a numeric IP address
-  if (inet_aton(aHostname, aResult)) {
-    // It is, our work here is done
-    return SUCCESS;
-  }
+    // See if it's a numeric IP address
+    if (inet_aton(aHostname, aResult)) {
+        // It is, our work here is done
+        return SUCCESS;
+    }
 
-  // Check we've got a valid DNS server to use
-  if (iDNSServer == INADDR_NONE) {
-    return INVALID_SERVER;
-  }
+    // Check we've got a valid DNS server to use
+    if (iDNSServer == IPAddress(0, 0, 0, 0)) {
+        return INVALID_SERVER;
+    }
 
-  ret = stm32_dns_gethostbyname(aHostname, &ipResult);
-  aResult = IPAddress(ipResult);
+    ret = stm32_dns_gethostbyname(aHostname, &ipResult);
+    aResult = IPAddress(ipResult);
 
-  return ret;
+    return ret;
 }
 
 /* Deprecated function. Do not use anymore. */

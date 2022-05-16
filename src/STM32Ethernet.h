@@ -43,17 +43,34 @@ class EthernetClass : public smodule {
 
 
     int maintain();
-    void schedule(void);
+
+    void schedule();
 
     void MACAddress(uint8_t *mac);
-    uint8_t *MACAddress(void);
+
+    uint8_t *MACAddress();
+
     IPAddress localIP();
+
     IPAddress subnetMask();
+
     IPAddress gatewayIP();
+
     IPAddress dnsServerIP();
 
+    void set_ip(IPAddress &local_ip);
+
     friend class EthernetClient;
+
     friend class EthernetServer;
+
+    int run(u32 tick) override { return 0; }
+
+    int begin(u32 tick) override { return 0; }
+
+    int diag(u32 tick) override;
+
+    void end();
 };
 
 extern EthernetClass Ethernet;

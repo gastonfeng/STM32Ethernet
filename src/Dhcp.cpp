@@ -1,11 +1,9 @@
 // DHCP Library v0.3 - April 25, 2009
 // Author: Jordan Terrell - blog.jordanterrell.com
 
-#include <string.h>
-#include <stdlib.h>
+#include <cstring>
 #include "Dhcp.h"
 #include "Arduino.h"
-#include "utility/stm32_eth.h"
 
 int DhcpClass::beginWithDHCP(uint8_t *mac, unsigned long timeout, unsigned long responseTimeout)
 {
@@ -27,7 +25,7 @@ void DhcpClass::reset_DHCP_lease()
 {
   _dhcp_state = STATE_DHCP_RELEASE;
   stm32_set_DHCP_state(_dhcp_state);
-  stm32_eth_scheduler();
+//  stm32_eth_scheduler();
   _dhcp_state = stm32_get_DHCP_state();
 }
 
@@ -39,7 +37,7 @@ int DhcpClass::request_DHCP_lease()
   unsigned long startTime = millis();
 
   while (_dhcp_state != STATE_DHCP_LEASED) {
-    stm32_eth_scheduler();
+//    stm32_eth_scheduler();
     _dhcp_state = stm32_get_DHCP_state();
 
     if (result != 1 && ((millis() - startTime) > _timeout)) {
