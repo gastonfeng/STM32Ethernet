@@ -104,10 +104,7 @@ static err_t tcp_recv_callback(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, 
 static err_t tcp_sent_callback(void *arg, struct tcp_pcb *tpcb, u16_t len);
 static void tcp_err_callback(void *arg, err_t err);
 static void TIM_scheduler_Config(void);
-void iperf_server_socket_init();
-void iperf_server_netconn_init();
-void iperf_client_socket_init();
-void iperf_client_netconn_init();
+
 void ethernetif_notify_conn_changed(struct netif *netif);
 /**
 * @brief  Configurates the network interface
@@ -193,14 +190,7 @@ void stm32_eth_init(const uint8_t *mac, const uint8_t *ip, const uint8_t *gw, co
     /* Create the Ethernet link handler thread */
     osThreadDef(LinkThr, ethernet_link_thread, osPriorityNormal, 0, 512);
     osThreadCreate(osThread(LinkThr), &gnetif);
-#ifdef CORE_DEBUG
-    iperf_server_socket_init();
-    iperf_server_netconn_init();
-#if defined(IPERF_CLIENT)
-    iperf_client_socket_init();
-    iperf_client_netconn_init();
-#endif
-#endif
+
     /* Update LwIP stack */
     // stm32_eth_scheduler();
 }
