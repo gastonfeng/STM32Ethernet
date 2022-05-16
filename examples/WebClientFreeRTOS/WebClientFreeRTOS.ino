@@ -1,5 +1,5 @@
 /*
-  Web client
+  Port of WebClient on FreeRTOS
 
  This sketch connects to a website (http://www.google.com)
 
@@ -18,6 +18,7 @@
 
 #include <LwIP.h>
 #include <STM32Ethernet.h>
+#include <STM32FreeRTOS.h>
 
 // if you don't want to use DNS (and reduce your sketch size)
 // use the numeric IP instead of the name for the server:
@@ -32,13 +33,10 @@ IPAddress ip(192, 168, 0, 177);
 // that you want to connect to (port 80 is default for HTTP):
 EthernetClient client;
 
-void setup() {
-  // Open serial communications and wait for port to open:
-  Serial.begin(9600);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
-  }
 
+// task code
+void taskETH(void* arg) {
+  UNUSED(arg);
   // start the Ethernet connection:
   if (Ethernet.begin() == 0) {
     Serial.println("Failed to configure Ethernet using DHCP");
@@ -61,23 +59,46 @@ void setup() {
     // if you didn't get a connection to the server:
     Serial.println("connection failed");
   }
+
+  while(1){
+    // if there are incoming bytes available
+    // from the server, read them and print them:
+    if (client.available()) {
+      char c = client.read();
+      Serial.print(c);
+    }
+
+    // if the server's disconnected, stop the client:
+    if (!client.connected()) {
+      Serial.println();
+      Serial.println("disconnecting.");
+      client.stop();
+
+      // do nothing forevermore:
+      while (true);
+    }
+  }
+}
+
+
+void setup() {
+  // Open serial communications and wait for port to open:
+  Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
+
+  portBASE_TYPE s = xTaskCreate(taskETH, NULL, 200, NULL, 1, NULL);
+  if (s != pdPASS) {
+    printf("Ethernet task creation failed\n");
+    while (1);
+  }
+
+  vTaskStartScheduler();
+  Serial.println("Scheduler failed");
+  while (1);
 }
 
 void loop() {
-  // if there are incoming bytes available
-  // from the server, read them and print them:
-  if (client.available()) {
-    char c = client.read();
-    Serial.print(c);
-  }
-
-  // if the server's disconnected, stop the client:
-  if (!client.connected()) {
-    Serial.println();
-    Serial.println("disconnecting.");
-    client.stop();
-
-    // do nothing forevermore:
-    while (true);
-  }
+  // Not used.
 }

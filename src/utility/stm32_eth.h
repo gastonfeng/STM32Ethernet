@@ -38,10 +38,6 @@
 #ifndef __STM32_ETH_H__
 #define __STM32_ETH_H__
 
-#ifdef __cplusplus
- extern "C" {
-#endif
-
 /* Includes ------------------------------------------------------------------*/
 #include "stm32_def.h"
 #include "lwip/ip_addr.h"
@@ -49,18 +45,18 @@
 #include "lwip/udp.h"
 #include "lwip/tcp.h"
 #include "lwip/opt.h"
+#include <functional>
 
 /* Exported types ------------------------------------------------------------*/
 /* TCP connection state */
-typedef enum
-{
+typedef enum {
   TCP_NONE = 0,
   TCP_CONNECTED,
   TCP_RECEIVED,
   TCP_SENT,
   TCP_ACCEPTED,
   TCP_CLOSING,
-}tcp_client_states;
+} tcp_client_states;
 
 /* Struct to store received data */
 struct pbuf_data {
@@ -74,6 +70,7 @@ struct udp_struct {
   struct pbuf_data data;
   ip_addr_t ip;       // the remote IP address from which the packet was received
   u16_t port;         // the remote port from which the packet was received
+  std::function<void()> onDataArrival;
 };
 
 /* TCP structure */
@@ -112,36 +109,38 @@ struct tcp_struct {
 #define DHCP_ASK_RELEASE           (uint8_t) 6
 
 /* Maximum number of client per server */
-#define MAX_CLIENT  2
+#define MAX_CLIENT  32
 
 #ifdef ETH_INPUT_USE_IT
-extern struct netif gnetif;
+  extern struct netif gnetif;
 #endif
 
 
 /* Exported functions ------------------------------------------------------- */
 void stm32_eth_init(const uint8_t *mac, const uint8_t *ip, const uint8_t *gw, const uint8_t *netmask);
+uint8_t stm32_eth_is_init(void);
+uint8_t stm32_eth_link_up(void);
 void stm32_eth_scheduler(void);
 
 void User_notification(struct netif *netif);
 
 #if LWIP_DHCP
-void stm32_DHCP_Process(struct netif *netif);
-void stm32_DHCP_Periodic_Handle(struct netif *netif);
-void stm32_DHCP_manual_config(void);
-uint8_t stm32_get_DHCP_lease_state(void);
-void stm32_set_DHCP_state(uint8_t state);
-uint8_t stm32_get_DHCP_state(void);
-uint8_t stm32_dhcp_started(void);
+  void stm32_DHCP_Process(struct netif *netif);
+  void stm32_DHCP_Periodic_Handle(struct netif *netif);
+  void stm32_DHCP_manual_config(void);
+  uint8_t stm32_get_DHCP_lease_state(void);
+  void stm32_set_DHCP_state(uint8_t state);
+  uint8_t stm32_get_DHCP_state(void);
+  uint8_t stm32_dhcp_started(void);
 #else
-// #error "LWIP_DHCP must be enabled in lwipopts.h"
+  #error "LWIP_DHCP must be enabled in lwipopts.h"
 #endif
 
 #if LWIP_DNS
-void stm32_dns_init(const uint8_t *dnsaddr);
-int8_t stm32_dns_gethostbyname(const char *hostname, uint32_t *ipaddr);
+  void stm32_dns_init(const uint8_t *dnsaddr);
+  int8_t stm32_dns_gethostbyname(const char *hostname, uint32_t *ipaddr);
 #else
-// #error "LWIP_DNS must be enabled in lwipopts.h"
+  #error "LWIP_DNS must be enabled in lwipopts.h"
 #endif
 
 #if LWIP_UDP
@@ -165,15 +164,11 @@ ip_addr_t *u8_to_ip_addr(uint8_t *ipu8, ip_addr_t *ipaddr);
 uint32_t ip_addr_to_u32(ip_addr_t *ipaddr);
 
 #if LWIP_TCP
-err_t tcp_connected_callback(void *arg, struct tcp_pcb *tpcb, err_t err);
-err_t tcp_accept_callback(void *arg, struct tcp_pcb *newpcb, err_t err);
-void tcp_connection_close(struct tcp_pcb *tpcb, struct tcp_struct *tcp);
+  err_t tcp_connected_callback(void *arg, struct tcp_pcb *tpcb, err_t err);
+  err_t tcp_accept_callback(void *arg, struct tcp_pcb *newpcb, err_t err);
+  void tcp_connection_close(struct tcp_pcb *tpcb, struct tcp_struct *tcp);
 #else
-#error "LWIP_TCP must be enabled in lwipopts.h"
-#endif
-
-#ifdef __cplusplus
-}
+  #error "LWIP_TCP must be enabled in lwipopts.h"
 #endif
 
 #endif /* __STM32_ETH_H__ */
